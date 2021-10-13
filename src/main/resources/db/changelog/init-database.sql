@@ -1,0 +1,2 @@
+CREATE SCHEMA IF NOT EXISTS hat;
+GRANT ALL ON DATABASE hat_service TO postgres;
