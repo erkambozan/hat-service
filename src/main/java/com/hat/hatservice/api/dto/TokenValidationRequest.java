@@ -13,6 +13,9 @@ public class TokenValidationRequest {
 	@NotNull(message = "token is required")
 	private String token;
 
+	public TokenValidationRequest() {
+	}
+
 	public TokenValidationRequest(@NotNull(message = "email is required") String email, @NotNull(message = "token is required") String token) {
 		this.email = email;
 		this.token = token;

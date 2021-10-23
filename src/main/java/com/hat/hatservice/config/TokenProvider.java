@@ -5,6 +5,10 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.hat.hatservice.db.User;
 import com.hat.hatservice.db.UserRepository;
 import io.jsonwebtoken.Jwts;
+
+import java.util.Date;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.Optional;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
@@ -21,11 +23,11 @@ import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 public class TokenProvider {
 	public static final String TOKEN_PREFIX = "Bearer ";
 	public static final String AUTHORIZATION_HEADER = "Authorization";
-	public static final String SIGN_UP_URL = 	"/v0/hat/user/register";
-	public static final String FORGOT_PASSWORD = "/v0/hat/user/forgotpassword";
-	public static final String LOGIN_URL = 		"/v0/hat/user/authenticate";
-	public static final String RESET_PASSWORD = "/v0/hat/user/resetpassword";
-	public static final String VALIDATE_TOKEN = "/v0/hat/user/validatetoken";
+	public static final String SIGN_UP_URL = "/hat/register";
+	public static final String FORGOT_PASSWORD = "/hat/forgotpassword";
+	public static final String LOGIN_URL = "/hat/authenticate";
+	public static final String RESET_PASSWORD = "/hat/resetpassword";
+	public static final String VALIDATE_TOKEN = "/hat/validatetoken";
 
 	private static final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
 
@@ -82,7 +84,7 @@ public class TokenProvider {
 	}
 
 	public Optional<User> getLoggedUser() {
-		String token = httpServletRequest.getHeader(AUTHORIZATION_HEADER);
+		String token = httpServletRequest.getHeader(TokenProvider.AUTHORIZATION_HEADER);
 		if (token != null) {
 			String user = parseJWTToken(token, this.securityProperties.getAuth().getSecretKey());
 			return userRepository.findUserByEmail(user);

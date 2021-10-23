@@ -1,23 +1,24 @@
 package com.hat.hatservice.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
+
 public class AuthenticationRequest {
-	private String email;
+	@JsonProperty("username")
+	@NotNull(message = "username required")
+	private String username;
+
+	@JsonProperty("password")
+	@NotNull(message = "password required")
 	private String password;
 
-	public AuthenticationRequest() {
+	public String getUsername() {
+		return username;
 	}
 
-	public AuthenticationRequest(String email, String password) {
-		this.email = email;
-		this.password = password;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public AuthenticationRequest setEmail(String email) {
-		this.email = email;
+	public AuthenticationRequest setUsername(String username) {
+		this.username = username;
 		return this;
 	}
 

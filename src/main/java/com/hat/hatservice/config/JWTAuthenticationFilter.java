@@ -19,7 +19,7 @@ import java.util.Date;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-	private final AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
 	private final SecurityProperties securityProperties;
 
 	public JWTAuthenticationFilter(AuthenticationManager authenticationManager, SecurityProperties securityProperties) {

@@ -31,7 +31,7 @@ public class User extends Object{
 	private String lastName;
 	@Column(name = "email")
 	private String email;
-	@Column(name = "password")
+	@Column(name = "password", length = 60)
 	private String password;
 	@Column(name = "secret")
 	private String secret;

@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import static com.hat.hatservice.config.TokenProvider.TOKEN_PREFIX;
 
-
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
 	private final SecurityProperties securityProperties;
@@ -34,7 +33,7 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 									HttpServletResponse res,
 									FilterChain chain) throws IOException, ServletException {
 
-		String header = req.getHeader(com.hat.hatservice.config.TokenProvider.AUTHORIZATION_HEADER);
+		String header = req.getHeader(TokenProvider.AUTHORIZATION_HEADER);
 
 		if (header == null || !header.startsWith(TOKEN_PREFIX)) {
 			chain.doFilter(req, res);
@@ -72,3 +71,4 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 		return null;
 	}
 }
+

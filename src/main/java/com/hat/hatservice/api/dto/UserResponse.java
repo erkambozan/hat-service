@@ -14,21 +14,18 @@ public class UserResponse {
 	private String lastName;
 	@JsonProperty("email")
 	private String email;
-	@JsonProperty("secret")
-	private String secret;
 	@JsonProperty("active")
 	private boolean active;
 
 	public UserResponse() {
 	}
 
-	public UserResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, String secret, boolean active) {
+	public UserResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, boolean active) {
 		this.id = id;
 		this.referenceId = referenceId;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
-		this.secret = secret;
 		this.active = active;
 	}
 
@@ -74,15 +71,6 @@ public class UserResponse {
 
 	public UserResponse setEmail(String email) {
 		this.email = email;
-		return this;
-	}
-
-	public String getSecret() {
-		return secret;
-	}
-
-	public UserResponse setSecret(String secret) {
-		this.secret = secret;
 		return this;
 	}
 

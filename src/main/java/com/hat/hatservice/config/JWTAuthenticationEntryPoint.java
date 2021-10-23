@@ -32,3 +32,4 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
 	}
 
 }
+

@@ -8,8 +8,8 @@ public class AuthenticationResponse extends UserResponse{
 	@JsonProperty("token")
 	private String jwtToken;
 
-	public AuthenticationResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, String secret, boolean active, String jwtToken) {
-		super(id, referenceId, firstName, lastName, email, secret, active);
+	public AuthenticationResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, boolean active, String jwtToken) {
+		super(id, referenceId, firstName, lastName, email, active);
 		this.jwtToken = jwtToken;
 	}
 
