@@ -35,7 +35,7 @@ public class Stake {
 	private Double stakePercentage;
 	@Column(name = "start_date", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date startDate;
+	private Date startDate = Date.from(Instant.now());
 	@Column(name = "end_date", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date endDate;
@@ -51,13 +51,12 @@ public class Stake {
 	public Stake() {
 	}
 
-	public Stake(UUID userId, Double startedStakeAmount, Double expiryStakeAmount, Integer expiryStakeTime, Double stakePercentage, Date startDate, Date endDate) {
+	public Stake(UUID userId, Double startedStakeAmount, Double expiryStakeAmount, Integer expiryStakeTime, Double stakePercentage, Date endDate) {
 		this.userId = userId;
 		this.startedStakeAmount = startedStakeAmount;
 		this.expiryStakeAmount = expiryStakeAmount;
 		this.expiryStakeTime = expiryStakeTime;
 		this.stakePercentage = stakePercentage;
-		this.startDate = startDate;
 		this.endDate = endDate;
 	}
 

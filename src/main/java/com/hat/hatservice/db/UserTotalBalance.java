@@ -113,26 +113,4 @@ public class UserTotalBalance {
 		return this;
 	}
 
-	public void withdrawMoney(Double amount){
-		setTotalBalance(getTotalBalance() - amount);
-		setWithdrawableBalance(getWithdrawableBalance() - amount);
-	}
-
-	public void stakeProfit(Double stakeAmount, Double stakeProfitAmount){
-		setTotalBalance(getTotalBalance() + stakeAmount + stakeProfitAmount);
-		setLockedBalance(getLockedBalance() + stakeAmount);
-		setWithdrawableBalance(getWithdrawableBalance() + stakeProfitAmount);
-	}
-
-	public void referenceProfit(Double amount){
-		setTotalBalance(getTotalBalance() + amount);
-		setWithdrawableBalance(getWithdrawableBalance() + amount);
-	}
-
-	public void doStake(Double amount){
-		setTotalBalance(getTotalBalance() - amount);
-		setLockedBalance(getLockedBalance() - amount);
-	}
-
-	// TODO Locked amount when will leave from locked amount;
 }
