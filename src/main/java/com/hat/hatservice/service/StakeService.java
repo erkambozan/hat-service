@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 public class StakeService {
 	private static final Logger logger = LoggerFactory.getLogger(StakeService.class);
@@ -51,6 +52,16 @@ public class StakeService {
 		new Stake(userLoggedDetails.getId(), stakeRequest.getStakeAmount(), expiryStakeAmount, stakeSettings.getExpiryStakeTime(), stakeSettings.getStakePercentage(), endDate);
 		logger.info("Stake amount deleting from User balance : " + stakeRequest.getStakeAmount());
 		doStake(stakeRequest.getStakeAmount(), userTotal);
+	}
+
+	public StakeSettingsResponse createStakeSettings(StakeSettingRequest stakeSettingRequest){
+
+		return null;
+	}
+
+	public StakeSettingsResponse updateStakeSettings(StakeSettingRequest stakeSettingRequest, UUID id){
+
+		return null;
 	}
 
 	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance){
