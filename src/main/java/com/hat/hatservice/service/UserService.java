@@ -8,13 +8,17 @@ import com.hat.hatservice.api.dto.UserResponse;
 import com.hat.hatservice.config.TokenProvider;
 import com.hat.hatservice.db.User;
 import com.hat.hatservice.db.UserRepository;
+import com.hat.hatservice.db.UserTotalBalance;
+import com.hat.hatservice.db.UserTotalBalanceRepository;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InvalidTokenException;
+import com.hat.hatservice.exception.NotFoundException;
 import de.taimos.totp.TOTP;
 import org.apache.commons.codec.binary.Base32;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -29,15 +33,17 @@ import java.util.Optional;
 public class UserService {
 	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final AuthenticationManager authenticationManager;
-	private final TokenProvider tokenProvider;
+	private final UserTotalBalanceRepository userTotalBalanceRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	@Autowired
+	private AuthenticationManager authenticationManager;
+	@Autowired
+	private TokenProvider tokenProvider;
 
-	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, TokenProvider tokenProvider) {
+	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository) {
 		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.authenticationManager = authenticationManager;
-		this.tokenProvider = tokenProvider;
+		this.userTotalBalanceRepository = userTotalBalanceRepository;
 	}
 
 	public UserResponse register(UserRequest request) throws DuplicateException {
@@ -61,6 +67,7 @@ public class UserService {
 				true
 		));
 
+		userTotalBalanceRepository.save(new UserTotalBalance(user.getId(), 0.0, 0.0, 0.0));
 		return new UserResponse(
 				user.getId(),
 				user.getReferenceId(),
@@ -117,4 +124,26 @@ public class UserService {
 				user.isActive());
 	}
 
+	public UserResponse getLoggedUserDetails() throws NotFoundException {
+		Optional<User> userDetails = tokenProvider.getLoggedUser();
+
+		User user = userDetails.orElseThrow(() -> new NotFoundException("User Not Found"));
+
+		return new UserResponse(user.getId(), user.getReferenceId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.isActive());
+	}
+
+	public UserService setPasswordEncoder(PasswordEncoder passwordEncoder) {
+		this.passwordEncoder = passwordEncoder;
+		return this;
+	}
+
+	public UserService setAuthenticationManager(AuthenticationManager authenticationManager) {
+		this.authenticationManager = authenticationManager;
+		return this;
+	}
+
+	public UserService setTokenProvider(TokenProvider tokenProvider) {
+		this.tokenProvider = tokenProvider;
+		return this;
+	}
 }
