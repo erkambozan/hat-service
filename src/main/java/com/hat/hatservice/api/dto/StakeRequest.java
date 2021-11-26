@@ -1,7 +1,11 @@
 package com.hat.hatservice.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class StakeRequest {
+	@JsonProperty("stake_type")
 	private String stakeType;
+	@JsonProperty("stake_amount")
 	private Double stakeAmount;
 
 	public StakeRequest() {
