@@ -48,29 +48,36 @@ public class StakeService {
 	public void stake(StakeRequest stakeRequest) throws NotFoundException, InsufficientBalance {
 		final UserResponse userLoggedDetails =  userService.getLoggedUserDetails();
 		logger.info("Stake started with : " + userLoggedDetails.getId());
-		Optional<UserTotalBalance> userTotalBalanceOptional = userTotalBalanceRepository.findByUserId(userLoggedDetails.getId());
-		if(userTotalBalanceOptional.isEmpty()){
-			throw new NotFoundException("User Total Balance Not Found");
-		}
-		if (userTotalBalanceOptional.get().getLockedBalance() < stakeRequest.getStakeAmount()){
-			throw new InsufficientBalance("Insufficient Balance");
-		}
+		Optional<UserTotalBalance> userTotalBalanceOptional = getUserTotalBalance(stakeRequest, userLoggedDetails);
+		StakeSettings stakeSettings = getStakeSettings(stakeRequest);
+		stakeMaker(stakeRequest, userLoggedDetails, userTotalBalanceOptional, stakeSettings);
+	}
 
-		Optional<StakeSettings> stakeSettingsOptional = stakeSettingsRepository.findStakeSettingsByStakeType(stakeRequest.getStakeType());
-		if(stakeSettingsOptional.isEmpty()){
-			throw new NotFoundException("Stake Type Not Found");
-		}
-		StakeSettings stakeSettings = stakeSettingsOptional.get();
-
-		if(stakeRequest.getStakeAmount() < stakeSettings.getMinimumLimit()){
-			throw new InsufficientBalance("Insufficient Limit");
-		}
-
+	private void stakeMaker(StakeRequest stakeRequest, UserResponse userLoggedDetails, Optional<UserTotalBalance> userTotalBalanceOptional, StakeSettings stakeSettings) {
 		Double expiryStakeAmount = stakeRequest.getStakeAmount() + (stakeRequest.getStakeAmount() * stakeSettings.getStakePercentage() / 100);
 		Date endDate = java.sql.Date.valueOf(LocalDate.now().plusMonths(stakeSettings.getExpiryStakeTime()));
 		stakeRepository.save(new Stake(userLoggedDetails.getId(), stakeRequest.getStakeAmount(), expiryStakeAmount, stakeSettings.getExpiryStakeTime(), stakeSettings.getStakePercentage(), endDate));
 		logger.info("Stake amount deleting from User balance : " + stakeRequest.getStakeAmount());
 		doStake(stakeRequest.getStakeAmount(), userTotalBalanceOptional.get());
+	}
+
+	private Optional<UserTotalBalance> getUserTotalBalance(StakeRequest stakeRequest, UserResponse userLoggedDetails) throws NotFoundException, InsufficientBalance {
+		Optional<UserTotalBalance> userTotalBalanceOptional = userTotalBalanceRepository.findByUserId(userLoggedDetails.getId());
+		if(userTotalBalanceOptional.isEmpty())
+			throw new NotFoundException("User Total Balance Not Found");
+		if (userTotalBalanceOptional.get().getLockedBalance() < stakeRequest.getStakeAmount())
+			throw new InsufficientBalance("Insufficient Balance");
+		return userTotalBalanceOptional;
+	}
+
+	private StakeSettings getStakeSettings(StakeRequest stakeRequest) throws NotFoundException, InsufficientBalance {
+		Optional<StakeSettings> stakeSettingsOptional = stakeSettingsRepository.findStakeSettingsByStakeType(stakeRequest.getStakeType());
+		if(stakeSettingsOptional.isEmpty())
+			throw new NotFoundException("Stake Type Not Found");
+		StakeSettings stakeSettings = stakeSettingsOptional.get();
+		if(stakeRequest.getStakeAmount() < stakeSettings.getMinimumLimit())
+			throw new InsufficientBalance("Insufficient Limit");
+		return stakeSettings;
 	}
 
 	public StakeSettingsResponse createStakeSettings(StakeSettingsRequest request) throws DuplicateException {

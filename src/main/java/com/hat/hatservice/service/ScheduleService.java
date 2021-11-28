@@ -22,8 +22,6 @@ public class ScheduleService {
 	public void publish() {
 		Date currentUtilDate = new Date();
 		List<Stake> stakes = stakeRepository.findAllByEndDate(currentUtilDate);
-
 		stakes.forEach(System.out::println);
-
 	}
 }
