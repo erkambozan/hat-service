@@ -23,7 +23,7 @@ public class Stake {
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
 	@Column(name = "id", columnDefinition = "uuid", unique = true)
 	private UUID id;
-	@Column(name = "userId")
+	@Column(name = "user_id")
 	private UUID userId;
 	@Column(name = "started_stake_amount")
 	private Double startedStakeAmount;
@@ -33,30 +33,36 @@ public class Stake {
 	private Integer expiryStakeTime;
 	@Column(name = "stake_percentage")
 	private Double stakePercentage;
+	@Column(name = "stake_type")
+	private String stakeType;
+	@Column(name = "stake_status")
+	private Boolean stakeStatus;
 	@Column(name = "start_date", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date startDate = Date.from(Instant.now());
+	private final Date startDate = Date.from(Instant.now());
 	@Column(name = "end_date", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date endDate;
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdAt = Date.from(Instant.now());
+	private final Date createdAt = Date.from(Instant.now());
 	@UpdateTimestamp
 	@Column(name = "updated_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date updatedAt = Date.from(Instant.now());
+	private final Date updatedAt = Date.from(Instant.now());
 
 	public Stake() {
 	}
 
-	public Stake(UUID userId, Double startedStakeAmount, Double expiryStakeAmount, Integer expiryStakeTime, Double stakePercentage, Date endDate) {
+	public Stake(UUID userId, Double startedStakeAmount, Double expiryStakeAmount, Integer expiryStakeTime, Double stakePercentage, String stakeType, Boolean stakeStatus, Date endDate) {
 		this.userId = userId;
 		this.startedStakeAmount = startedStakeAmount;
 		this.expiryStakeAmount = expiryStakeAmount;
 		this.expiryStakeTime = expiryStakeTime;
 		this.stakePercentage = stakePercentage;
+		this.stakeType = stakeType;
+		this.stakeStatus = stakeStatus;
 		this.endDate = endDate;
 	}
 
@@ -114,13 +120,26 @@ public class Stake {
 		return this;
 	}
 
-	public Date getStartDate() {
-		return startDate;
+	public String getStakeType() {
+		return stakeType;
 	}
 
-	public Stake setStartDate(Date startDate) {
-		this.startDate = startDate;
+	public Stake setStakeType(String stakeType) {
+		this.stakeType = stakeType;
 		return this;
+	}
+
+	public Boolean getStakeStatus() {
+		return stakeStatus;
+	}
+
+	public Stake setStakeStatus(Boolean stakeStatus) {
+		this.stakeStatus = stakeStatus;
+		return this;
+	}
+
+	public Date getStartDate() {
+		return startDate;
 	}
 
 	public Date getEndDate() {
@@ -129,24 +148,6 @@ public class Stake {
 
 	public Stake setEndDate(Date endDate) {
 		this.endDate = endDate;
-		return this;
-	}
-
-	public Date getCreatedAt() {
-		return createdAt;
-	}
-
-	public Stake setCreatedAt(Date createdAt) {
-		this.createdAt = createdAt;
-		return this;
-	}
-
-	public Date getUpdatedAt() {
-		return updatedAt;
-	}
-
-	public Stake setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
 		return this;
 	}
 }

@@ -1,12 +1,8 @@
 package com.hat.hatservice.api.v1;
 
-import com.hat.hatservice.api.dto.StakeRequest;
 import com.hat.hatservice.api.dto.StakeResponse;
 import com.hat.hatservice.api.dto.StakeSettingsRequest;
 import com.hat.hatservice.api.dto.StakeSettingsResponse;
-import com.hat.hatservice.db.StakeSettings;
-import com.hat.hatservice.exception.DuplicateException;
-import com.hat.hatservice.exception.InsufficientBalance;
 import com.hat.hatservice.exception.NotFoundException;
 import com.hat.hatservice.service.StakeService;
 import org.springframework.http.HttpStatus;
@@ -21,31 +17,32 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/hat/stake")
-public class StakeController {
+@RequestMapping("/hat/admin")
+public class AdminController {
 	private final StakeService stakeService;
 
-	public StakeController(StakeService stakeService) {
+	public AdminController(StakeService stakeService) {
 		this.stakeService = stakeService;
 	}
 
-	@PostMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/stakes", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public List<StakeResponse> findAllStakes() throws NotFoundException {
+		return stakeService.findAllStakes();
+	}
+
+	@PostMapping(value = "/settings", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.CREATED)
-	public void stake(@RequestBody StakeRequest request) throws Exception {
-		stakeService.stake(request);
+	public StakeSettingsResponse create(@RequestBody StakeSettingsRequest request) throws Exception {
+		return stakeService.createStakeSettings(request);
 	}
 
-	@GetMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/settings/{id}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	public List<StakeResponse> findStakesByUserId() throws NotFoundException {
-		return stakeService.findStakesByUserId();
-	}
-
-	@GetMapping(value = "/settings", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(code = HttpStatus.OK)
-	public List<StakeSettingsResponse> getStakeSettingsAll() throws NotFoundException {
-		return stakeService.getStakeSettingsAll();
+	public void update(@RequestBody StakeSettingsRequest request, @PathVariable("id") UUID id) throws NotFoundException {
+		stakeService.updateStakeSettings(request, id);
 	}
 }

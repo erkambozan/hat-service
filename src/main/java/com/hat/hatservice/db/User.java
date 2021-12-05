@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user_account")
-public class User extends Object{
+public class User {
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -45,8 +45,6 @@ public class User extends Object{
 	@Column(name = "updated_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date updatedAt = Date.from(Instant.now());
-
-
 
 	public User() {
 	}

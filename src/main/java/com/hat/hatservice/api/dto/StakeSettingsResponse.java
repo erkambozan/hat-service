@@ -1,6 +1,7 @@
 package com.hat.hatservice.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hat.hatservice.db.StakeSettings;
 
 import java.util.UUID;
 
@@ -16,6 +17,14 @@ public class StakeSettingsResponse {
 	private Double minimumLimit;
 
 	public StakeSettingsResponse() {
+	}
+
+	public StakeSettingsResponse(StakeSettings stakeSettings) {
+		this.id = stakeSettings.getId();
+		this.expiryStakeTime = stakeSettings.getExpiryStakeTime();
+		this.stakePercentage = stakeSettings.getStakePercentage();
+		this.stakeType = stakeSettings.getStakeType();
+		this.minimumLimit = stakeSettings.getMinimumLimit();
 	}
 
 	public StakeSettingsResponse(UUID id, int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit) {

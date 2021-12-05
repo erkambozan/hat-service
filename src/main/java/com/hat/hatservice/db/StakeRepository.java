@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface StakeRepository extends CrudRepository<Stake, UUID> {
 	List<Stake> findAllByEndDate(Date endDate);
+	List<Stake> findAllByUserId(UUID userId);
 }

@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS hat.stake
     expiry_stake_amount  DOUBLE PRECISION,
     expiry_stake_time    INTEGER,
     stake_percentage     DOUBLE PRECISION,
+    stake_type           TEXT,
+    stake_status         BOOLEAN,
     start_date           TIMESTAMP WITH TIME ZONE,
     end_date             TIMESTAMP WITH TIME ZONE,
     created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
