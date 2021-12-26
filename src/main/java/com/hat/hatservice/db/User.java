@@ -31,6 +31,8 @@ public class User {
 	private String lastName;
 	@Column(name = "email")
 	private String email;
+	@Column(name = "role")
+	private String role;
 	@Column(name = "password", length = 60)
 	private String password;
 	@Column(name = "secret")
@@ -128,6 +130,15 @@ public class User {
 
 	public User setActive(boolean active) {
 		this.active = active;
+		return this;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public User setRole(String role) {
+		this.role = role;
 		return this;
 	}
 }

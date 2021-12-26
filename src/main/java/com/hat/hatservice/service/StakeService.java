@@ -5,7 +5,7 @@ import com.hat.hatservice.api.dto.StakeResponse;
 import com.hat.hatservice.api.dto.StakeSettingsRequest;
 import com.hat.hatservice.api.dto.StakeSettingsResponse;
 import com.hat.hatservice.api.dto.UserResponse;
-import com.hat.hatservice.db.OptionalConsumer;
+import com.hat.hatservice.utils.OptionalConsumer;
 import com.hat.hatservice.db.Stake;
 import com.hat.hatservice.db.StakeRepository;
 import com.hat.hatservice.db.StakeSettings;
@@ -20,7 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,9 +60,10 @@ public class StakeService {
 		stakeMaker(stakeRequest, userLoggedDetails, userTotalBalance, stakeSettings);
 	}
 
-	private void stakeMaker(StakeRequest stakeRequest, UserResponse userLoggedDetails, UserTotalBalance userTotalBalanceOptional, StakeSettings stakeSettings) {
+	private void stakeMaker(StakeRequest stakeRequest, UserResponse userLoggedDetails, UserTotalBalance userTotalBalanceOptional, StakeSettings stakeSettings) throws ParseException {
 		Double expiryStakeAmount = stakeRequest.getStakeAmount() + (stakeRequest.getStakeAmount() * stakeSettings.getStakePercentage() / 100);
-		Date endDate = java.sql.Date.valueOf(LocalDate.now().plusMonths(stakeSettings.getExpiryStakeTime()));
+		DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		Date endDate = new SimpleDateFormat("dd/MM/yyyy").parse(customFormatter.format(LocalDate.now().plusMonths(stakeSettings.getExpiryStakeTime())));
 		stakeRepository.save(new Stake(userLoggedDetails.getId(), stakeRequest.getStakeAmount(), expiryStakeAmount, stakeSettings.getExpiryStakeTime(), stakeSettings.getStakePercentage(), stakeSettings.getStakeType(), true, endDate));
 		logger.info("Stake amount deleting from User balance : " + stakeRequest.getStakeAmount());
 		doStake(stakeRequest.getStakeAmount(), userTotalBalanceOptional);
@@ -67,18 +71,15 @@ public class StakeService {
 
 	private UserTotalBalance getUserTotalBalance(StakeRequest stakeRequest, UserResponse userLoggedDetails) throws Exception {
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User balance not found"));
-		if (userTotalBalance.getLockedBalance() < stakeRequest.getStakeAmount())
-			throw new InsufficientBalance("Insufficient Balance");
+		if (userTotalBalance.getTotalBalance() < stakeRequest.getStakeAmount()) throw new InsufficientBalance("Insufficient Balance");
 		return userTotalBalance;
 	}
 
 	private StakeSettings getStakeSettings(StakeRequest stakeRequest) throws NotFoundException, InsufficientBalance {
 		Optional<StakeSettings> stakeSettingsOptional = stakeSettingsRepository.findStakeSettingsByStakeType(stakeRequest.getStakeType());
-		if(stakeSettingsOptional.isEmpty())
-			throw new NotFoundException("Stake Type Not Found");
+		if(stakeSettingsOptional.isEmpty()) throw new NotFoundException("Stake Type Not Found");
 		StakeSettings stakeSettings = stakeSettingsOptional.get();
-		if(stakeRequest.getStakeAmount() < stakeSettings.getMinimumLimit())
-			throw new InsufficientBalance("Insufficient Limit");
+		if(stakeRequest.getStakeAmount() < stakeSettings.getMinimumLimit()) throw new InsufficientBalance("Insufficient Limit");
 		return stakeSettings;
 	}
 
@@ -96,7 +97,7 @@ public class StakeService {
 		stakeSettingsRepository.save(stakeSettings);
 	}
 
-	public List<StakeSettingsResponse> getStakeSettingsAll() throws NotFoundException {
+	public List<StakeSettingsResponse> getStakeSettingsAll() {
 		logger.info("Getting all stake settings");
 		Iterable<StakeSettings> stakeList = stakeSettingsRepository.findAll();
 		List<StakeSettingsResponse> stakeResponseList = new ArrayList();
@@ -123,13 +124,18 @@ public class StakeService {
 
 	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance){
 		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
-		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() - amount);
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
-	public void stakeProfit(Double stakeAmount, Double stakeProfitAmount, UserTotalBalance userTotalBalance){
-		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + stakeAmount + stakeProfitAmount);
+	public void stakeProfit(Double stakeExpiryAmount, UserTotalBalance userTotalBalance){
+		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + stakeExpiryAmount);
 		userTotalBalanceRepository.save(userTotalBalance);
+	}
+
+	public void finishStake(UUID stakeId, StakeRepository stakeRepository) throws Exception {
+		logger.info("Stake finishing stake id : " + stakeId);
+		Stake stake = OptionalConsumer.of(stakeRepository.findById(stakeId)).ifPresent(new NotFoundException("Stake not found."));
+		stakeRepository.save(stake.setStakeStatus(false));
 	}
 
 	public void referenceProfit(Double amount, UserTotalBalance userTotalBalance){
@@ -141,6 +147,4 @@ public class StakeService {
 		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
-
-	// TODO Locked amount when will leave from locked amount;
 }

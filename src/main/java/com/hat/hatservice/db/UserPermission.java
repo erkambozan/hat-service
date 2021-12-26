@@ -16,39 +16,43 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_total_balance")
-public class UserTotalBalance {
+@Table(name = "user_permission")
+public class UserPermission {
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
 	@Column(name = "id", columnDefinition = "uuid", unique = true)
 	private UUID id;
+
 	@Column(name = "user_id")
 	private UUID userId;
-	@Column(name = "total_balance")
-	private Double totalBalance;
+
+	@Column(name = "permission_id")
+	private UUID permissionId;
+
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt = Date.from(Instant.now());
+
 	@UpdateTimestamp
 	@Column(name = "updated_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date updatedAt = Date.from(Instant.now());
 
-	public UserTotalBalance() {
+	public UserPermission() {
 	}
 
-	public UserTotalBalance(UUID userId, Double totalBalance) {
+	public UserPermission(UUID userId, UUID permissionId) {
 		this.userId = userId;
-		this.totalBalance = totalBalance;
+		this.permissionId = permissionId;
 	}
 
 	public UUID getId() {
 		return id;
 	}
 
-	public UserTotalBalance setId(UUID id) {
+	public UserPermission setId(UUID id) {
 		this.id = id;
 		return this;
 	}
@@ -57,17 +61,17 @@ public class UserTotalBalance {
 		return userId;
 	}
 
-	public UserTotalBalance setUserId(UUID userId) {
+	public UserPermission setUserId(UUID userId) {
 		this.userId = userId;
 		return this;
 	}
 
-	public Double getTotalBalance() {
-		return totalBalance;
+	public UUID getPermissionId() {
+		return permissionId;
 	}
 
-	public UserTotalBalance setTotalBalance(Double totalBalance) {
-		this.totalBalance = totalBalance;
+	public UserPermission setPermissionId(UUID permissionId) {
+		this.permissionId = permissionId;
 		return this;
 	}
 
@@ -75,7 +79,7 @@ public class UserTotalBalance {
 		return createdAt;
 	}
 
-	public UserTotalBalance setCreatedAt(Date createdAt) {
+	public UserPermission setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 		return this;
 	}
@@ -84,9 +88,9 @@ public class UserTotalBalance {
 		return updatedAt;
 	}
 
-	public UserTotalBalance setUpdatedAt(Date updatedAt) {
+	public UserPermission setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 		return this;
 	}
-
 }
+

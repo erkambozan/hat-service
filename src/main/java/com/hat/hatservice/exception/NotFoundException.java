@@ -1,10 +1,14 @@
 package com.hat.hatservice.exception;
 
+import com.hat.hatservice.db.Stake;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.util.Optional;
+import java.util.function.Consumer;
+
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class NotFoundException extends Exception{
+public class NotFoundException extends Exception {
 	public NotFoundException() {
 		super();
 	}

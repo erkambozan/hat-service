@@ -8,9 +8,9 @@ public class UserResponse {
 	private UUID id;
 	@JsonProperty("reference_id")
 	private UUID referenceId;
-	@JsonProperty("first_name")
+	@JsonProperty("firstName")
 	private String firstName;
-	@JsonProperty("last_name")
+	@JsonProperty("lastName")
 	private String lastName;
 	@JsonProperty("email")
 	private String email;

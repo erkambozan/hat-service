@@ -3,6 +3,7 @@ package com.hat.hatservice.db;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,11 +38,9 @@ public class Stake {
 	private String stakeType;
 	@Column(name = "stake_status")
 	private Boolean stakeStatus;
-	@Column(name = "start_date", columnDefinition = "timestamp")
-	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "start_date")
 	private final Date startDate = Date.from(Instant.now());
-	@Column(name = "end_date", columnDefinition = "timestamp")
-	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name = "end_date")
 	private Date endDate;
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")

@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS hat.user_account
     first_name   TEXT,
     last_name    TEXT,
     email        VARCHAR(128),
+    role         TEXT,
     password     VARCHAR(60),
     secret       VARCHAR(128),
     active       BOOLEAN,
@@ -43,8 +44,8 @@ CREATE TABLE IF NOT EXISTS hat.stake
     stake_percentage     DOUBLE PRECISION,
     stake_type           TEXT,
     stake_status         BOOLEAN,
-    start_date           TIMESTAMP WITH TIME ZONE,
-    end_date             TIMESTAMP WITH TIME ZONE,
+    start_date           DATE,
+    end_date             DATE,
     created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at           TIMESTAMP WITH TIME ZONE
 );
@@ -65,3 +66,54 @@ CREATE TABLE IF NOT EXISTS hat.user_total_balance
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_total_balance_id_uindex
     ON hat.user_total_balance (id);
+
+CREATE TABLE IF NOT EXISTS hat.permission
+(
+    id              UUID PRIMARY KEY,
+    permission_name TEXT,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at      TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS permission_id_uindex
+    ON hat.permission (id);
+
+CREATE TABLE IF NOT EXISTS hat.user_permission
+(
+    id            UUID PRIMARY KEY,
+    user_id       UUID,
+    permission_id UUID,
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at    TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS user_permission_id_uindex
+    ON hat.user_permission (id);
+
+CREATE TABLE IF NOT EXISTS hat.transactions
+(
+    id         UUID PRIMARY KEY,
+    user_id    UUID,
+    amount     DOUBLE PRECISION,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS transactions_id_uindex
+    ON hat.transactions (id);
+
+
+
+CREATE TABLE IF NOT EXISTS hat.withdrawal
+(
+    id              UUID PRIMARY KEY,
+    user_id         UUID,
+    withdraw_amount INT,
+    wallet_address  TEXT,
+    status          TEXT,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at      TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_id_uindex
+    ON hat.withdrawal (id);

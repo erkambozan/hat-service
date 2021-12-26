@@ -1,4 +1,4 @@
-package com.hat.hatservice.db;
+package com.hat.hatservice.utils;
 
 import java.util.Optional;
 
@@ -24,12 +24,5 @@ public class OptionalConsumer<T> {
 		if (optional.isPresent()){
 			throw exception;
 		}
-	}
-
-	public OptionalConsumer<T> ifNotPresent(Runnable r) {
-		if (optional.isEmpty()) {
-			r.run();
-		}
-		return this;
 	}
 }
