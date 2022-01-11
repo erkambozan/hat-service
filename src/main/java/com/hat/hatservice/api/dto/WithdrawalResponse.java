@@ -10,7 +10,7 @@ public class WithdrawalResponse {
 	@JsonProperty("userId")
 	private UUID userId;
 	@JsonProperty("withdraw_amount")
-	private Integer withdrawAmount;
+	private Double withdrawAmount;
 	@JsonProperty("wallet_address")
 	private String walletAddress;
 	private String status;
@@ -44,11 +44,11 @@ public class WithdrawalResponse {
 		return this;
 	}
 
-	public Integer getWithdrawAmount() {
+	public Double getWithdrawAmount() {
 		return withdrawAmount;
 	}
 
-	public WithdrawalResponse setWithdrawAmount(Integer withdrawAmount) {
+	public WithdrawalResponse setWithdrawAmount(Double withdrawAmount) {
 		this.withdrawAmount = withdrawAmount;
 		return this;
 	}
