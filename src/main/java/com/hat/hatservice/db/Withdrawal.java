@@ -21,7 +21,7 @@ public class Withdrawal {
 	@Column(name = "user_id")
 	private UUID userId;
 	@Column(name = "withdraw_amount")
-	private Integer withdrawAmount;
+	private Double withdrawAmount;
 	@Column(name = "wallet_address")
 	private String walletAddress;
 	@Column(name = "status")
@@ -30,7 +30,7 @@ public class Withdrawal {
 	public Withdrawal() {
 	}
 
-	public Withdrawal(UUID userId, Integer withdrawAmount, String walletAddress, String status) {
+	public Withdrawal(UUID userId, Double withdrawAmount, String walletAddress, String status) {
 		this.userId = userId;
 		this.withdrawAmount = withdrawAmount;
 		this.walletAddress = walletAddress;
@@ -60,11 +60,11 @@ public class Withdrawal {
 		return this;
 	}
 
-	public Integer getWithdrawAmount() {
+	public Double getWithdrawAmount() {
 		return withdrawAmount;
 	}
 
-	public Withdrawal setWithdrawAmount(Integer withdrawAmount) {
+	public Withdrawal setWithdrawAmount(Double withdrawAmount) {
 		this.withdrawAmount = withdrawAmount;
 		return this;
 	}

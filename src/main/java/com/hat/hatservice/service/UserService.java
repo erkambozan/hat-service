@@ -148,12 +148,12 @@ public class UserService {
 		return new UserResponse(user.getId(), user.getReferenceId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.isActive());
 	}
 
-	public void entryTransactionsAmount(UUID userId, Double amount){
-		transactionsRepository.save(new Transactions(userId, amount));
+	public void entryTransactionsAmount(UUID userId, Double amount, String title){
+		transactionsRepository.save(new Transactions(userId, amount, title));
 	}
 
-	public void outputTransactionsAmount(UUID userId, Double amount){
-		transactionsRepository.save(new Transactions(userId, -amount));
+	public void outputTransactionsAmount(UUID userId, Double amount, String title){
+		transactionsRepository.save(new Transactions(userId, -amount, title));
 	}
 
 	public List<TransactionsResponse> getTransactionsByUserId(UUID userId){
@@ -189,6 +189,9 @@ public class UserService {
 		logger.info("Editing withdrawal request user id : " + userDetails.getId());
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdrawal not found"));
 		withdrawal.changeFields(request);
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findById(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found"));
+		withdrawMoney(request.getWithdrawAmount(), userTotalBalance, request.getWalletAddress());
+		logger.info("Withdraw : " + userDetails.getId());
 		withdrawalRepository.save(withdrawal);
 	}
 
@@ -199,6 +202,12 @@ public class UserService {
 		List<WithdrawalResponse> withdrawalResponseList = new ArrayList();
 		withdrawalList.forEach(withdrawal -> withdrawalResponseList.add(new WithdrawalResponse(withdrawal)));
 		return withdrawalResponseList;
+	}
+
+	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance, String withdrawAddress){
+		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
+		outputTransactionsAmount(userTotalBalance.getUserId(), -amount, "Withdraw to " + withdrawAddress);
+		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
 	public List<WithdrawalResponse> getWithdrawalRequestAll(){
@@ -219,6 +228,13 @@ public class UserService {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userDetails.getId())).ifPresent(new NotFoundException("Not Found User Balance"));
 		return userTotalBalance.getTotalBalance();
+	}
+
+	public void referenceProfit(UUID referencedUserId, Double amount) throws Exception {
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(referencedUserId)).ifPresent(new NotFoundException("User Not Found"));
+		Double profitAmount = (amount / 100) * 10;
+		entryTransactionsAmount(referencedUserId, profitAmount, "Reference Profit");
+		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + profitAmount);
 	}
 
 	public UserService setPasswordEncoder(PasswordEncoder passwordEncoder) {

@@ -55,13 +55,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS stake_id_uindex
 
 CREATE TABLE IF NOT EXISTS hat.user_total_balance
 (
-    id                   UUID PRIMARY KEY,
-    user_id              UUID,
-    total_balance        DOUBLE PRECISION,
-    withdrawable_balance DOUBLE PRECISION,
-    locked_balance       DOUBLE PRECISION,
-    created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at           TIMESTAMP WITH TIME ZONE
+    id            UUID PRIMARY KEY,
+    user_id       UUID,
+    total_balance DOUBLE PRECISION,
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at    TIMESTAMP WITH TIME ZONE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_total_balance_id_uindex
@@ -95,6 +93,7 @@ CREATE TABLE IF NOT EXISTS hat.transactions
     id         UUID PRIMARY KEY,
     user_id    UUID,
     amount     DOUBLE PRECISION,
+    title      TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE
 );
@@ -102,18 +101,35 @@ CREATE TABLE IF NOT EXISTS hat.transactions
 CREATE UNIQUE INDEX IF NOT EXISTS transactions_id_uindex
     ON hat.transactions (id);
 
-
-
 CREATE TABLE IF NOT EXISTS hat.withdrawal
 (
     id              UUID PRIMARY KEY,
     user_id         UUID,
-    withdraw_amount INT,
+    withdraw_amount DOUBLE PRECISION,
     wallet_address  TEXT,
     status          TEXT,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at      TIMESTAMP WITH TIME ZONE
 );
-
 CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_id_uindex
     ON hat.withdrawal (id);
+
+CREATE TABLE IF NOT EXISTS hat.payment
+(
+    id              UUID PRIMARY KEY,
+    user_id         UUID,
+    user_email      TEXT,
+    transaction_id  TEXT,
+    usd_amount      DOUBLE PRECISION,
+    token_amount    DOUBLE PRECISION,
+    currency        TEXT,
+    currency_amount DOUBLE PRECISION,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at      TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS payment_id_uindex
+    ON hat.payment (id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS payment_transaction_id_uindex
+    ON hat.payment (transaction_id);

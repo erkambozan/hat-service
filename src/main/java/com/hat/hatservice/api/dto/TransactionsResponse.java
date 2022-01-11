@@ -13,6 +13,8 @@ public class TransactionsResponse {
 	private UUID userId;
 	@JsonProperty("amount")
 	private Double amount;
+	@JsonProperty("title")
+	private String title;
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private java.util.Date transactionDate;
 
@@ -23,6 +25,7 @@ public class TransactionsResponse {
 		this.id = transactions.getId();
 		this.userId = transactions.getUserId();
 		this.amount = transactions.getAmount();
+		this.title = transactions.getTitle();
 		this.transactionDate = transactions.getCreatedAt();
 	}
 
@@ -50,6 +53,15 @@ public class TransactionsResponse {
 
 	public TransactionsResponse setAmount(Double amount) {
 		this.amount = amount;
+		return this;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public TransactionsResponse setTitle(String title) {
+		this.title = title;
 		return this;
 	}
 

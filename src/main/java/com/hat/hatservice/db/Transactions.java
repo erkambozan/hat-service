@@ -30,6 +30,9 @@ public class Transactions {
 	@Column(name = "amount")
 	private Double amount;
 
+	@Column(name = "title")
+	private String title;
+
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -42,9 +45,10 @@ public class Transactions {
 	public Transactions() {
 	}
 
-	public Transactions(UUID userId, Double amount) {
+	public Transactions(UUID userId, Double amount, String title) {
 		this.userId = userId;
 		this.amount = amount;
+		this.title = title;
 	}
 
 	public UUID getId() {
@@ -71,6 +75,15 @@ public class Transactions {
 
 	public Transactions setAmount(Double amount) {
 		this.amount = amount;
+		return this;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public Transactions setTitle(String title) {
+		this.title = title;
 		return this;
 	}
 

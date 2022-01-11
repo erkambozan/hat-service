@@ -5,23 +5,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class WithdrawalRequest {
 	@JsonProperty("withdraw_amount")
-	private Integer withdrawAmount;
+	private Double withdrawAmount;
 	@JsonProperty("wallet_address")
 	private String walletAddress;
 
 	public WithdrawalRequest() {
 	}
 
-	public WithdrawalRequest(Integer withdrawAmount, String walletAddress) {
+	public WithdrawalRequest(Double withdrawAmount, String walletAddress) {
 		this.withdrawAmount = withdrawAmount;
 		this.walletAddress = walletAddress;
 	}
 
-	public Integer getWithdrawAmount() {
+	public Double getWithdrawAmount() {
 		return withdrawAmount;
 	}
 
-	public WithdrawalRequest setWithdrawAmount(Integer withdrawAmount) {
+	public WithdrawalRequest setWithdrawAmount(Double withdrawAmount) {
 		this.withdrawAmount = withdrawAmount;
 		return this;
 	}

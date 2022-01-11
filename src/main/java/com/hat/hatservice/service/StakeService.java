@@ -122,10 +122,6 @@ public class StakeService {
 		return stakeResponseList;
 	}
 
-	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance){
-		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
-		userTotalBalanceRepository.save(userTotalBalance);
-	}
 
 	public void stakeProfit(Double stakeExpiryAmount, UserTotalBalance userTotalBalance){
 		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + stakeExpiryAmount);
