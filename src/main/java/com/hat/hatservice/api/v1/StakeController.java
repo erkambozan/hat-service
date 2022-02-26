@@ -43,10 +43,4 @@ public class StakeController {
 	public List<StakeSettingsResponse> getStakeSettingsAll() {
 		return stakeService.getStakeSettingsAll();
 	}
-
-	@GetMapping(value = "/exchangeearntowithdraw/{amount}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(code = HttpStatus.OK)
-	public void exchangeEarnToWithdraw(@PathVariable("amount") double amount) throws Exception {
-		stakeService.exchangeEarnToWithdraw(amount);
-	}
 }

@@ -8,6 +8,7 @@ import com.hat.hatservice.api.dto.TokenValidationRequest;
 import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserRequest;
 import com.hat.hatservice.api.dto.UserResponse;
+import com.hat.hatservice.api.dto.UserTotalBalanceResponse;
 import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
 import com.hat.hatservice.config.TokenProvider;
@@ -21,6 +22,7 @@ import com.hat.hatservice.db.UserTotalBalance;
 import com.hat.hatservice.db.UserTotalBalanceRepository;
 import com.hat.hatservice.db.Withdrawal;
 import com.hat.hatservice.db.WithdrawalRepository;
+import com.hat.hatservice.exception.BadRequestException;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InsufficientBalance;
 import com.hat.hatservice.exception.InvalidTokenException;
@@ -195,6 +197,8 @@ public class UserService {
 	public void deleteWithdrawalRequest(UUID id) throws Exception {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		logger.info("Deleting withdrawal request user id : " + userDetails.getId());
+		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdraw not found"));
+		if(withdrawal.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
 		withdrawalRepository.deleteById(id);
 	}
 
@@ -238,10 +242,10 @@ public class UserService {
 		withdrawalRepository.save(withdrawal);
 	}
 
-	public Double getTotalBalance() throws Exception {
+	public UserTotalBalanceResponse getTotalBalance() throws Exception {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userDetails.getId())).ifPresent(new NotFoundException("Not Found User Balance"));
-		return userTotalBalance.getWithdrawableBalance();
+		return new UserTotalBalanceResponse(userTotalBalance);
 	}
 
 	public void referenceProfit(UUID referencedUserId, Double amount) throws Exception {
@@ -272,7 +276,7 @@ public class UserService {
 		earnWithdrawRepository.save(new EarnWithdraw(userLoggedDetails.getId(), request.getCoinType(), request.getCoinPrice(), request.getWithdrawAddress(), request.getWithdrawAmount(), "Pending"));
 	}
 
-	public List<EarnWithdrawResponse> getEarnWithdrawByUserId() throws NotFoundException {
+	public List<EarnWithdrawResponse> getEarnWithdrawRequestsByUserId() throws NotFoundException {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Getting earn withdraw user id : " + userLoggedDetails.getId());
 		List<EarnWithdraw> earnWithdrawList = earnWithdrawRepository.findAllByUserId(userLoggedDetails.getId());
@@ -292,7 +296,7 @@ public class UserService {
 	}
 
 	// only Admin
-	public void setEarnWithdrawStatus(String status, UUID id) throws Exception {
+	public void setEarnWithdrawStatus(UUID id, String status) throws Exception {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Setting earn withdraw status user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
@@ -304,6 +308,7 @@ public class UserService {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Deleting earn withdraw user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
+		if(earnWithdraw.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
 		earnWithdrawRepository.delete(earnWithdraw);
 	}
 

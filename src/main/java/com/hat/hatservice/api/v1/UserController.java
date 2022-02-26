@@ -2,12 +2,16 @@ package com.hat.hatservice.api.v1;
 
 import com.hat.hatservice.api.dto.AuthenticationRequest;
 import com.hat.hatservice.api.dto.AuthenticationResponse;
+import com.hat.hatservice.api.dto.EarnWithdrawRequest;
+import com.hat.hatservice.api.dto.EarnWithdrawResponse;
 import com.hat.hatservice.api.dto.TokenValidationRequest;
 import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserRequest;
 import com.hat.hatservice.api.dto.UserResponse;
+import com.hat.hatservice.api.dto.UserTotalBalanceResponse;
 import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
+import com.hat.hatservice.db.UserTotalBalance;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InvalidTokenException;
 import com.hat.hatservice.exception.NotFoundException;
@@ -18,7 +22,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -69,7 +72,7 @@ public class UserController {
 
 	@GetMapping(value = "/totalbalance", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	public Double getTotalBalance() throws Exception {
+	public UserTotalBalanceResponse getTotalBalance() throws Exception {
 		return userService.getTotalBalance();
 	}
 
@@ -79,7 +82,7 @@ public class UserController {
 		userService.createWithdrawalRequest(request);
 	}
 
-	@GetMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public List<WithdrawalResponse> getWithdrawalRequestByUserId() throws Exception {
 		return userService.getWithdrawalRequestByUserId();
@@ -91,9 +94,27 @@ public class UserController {
 		userService.deleteWithdrawalRequest(id);
 	}
 
-	@PutMapping(value = "/withdraw/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/earntowithdraw/{amount}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	public void editWithdrawalRequest(@PathVariable("id") UUID id, @RequestBody WithdrawalRequest request) throws Exception {
-		userService.editWithdrawal(id, request);
+	public void exchangeEarnToWithdraw(@PathVariable("amount") Double amount) throws Exception {
+		userService.exchangeEarnToWithdraw(amount);
+	}
+
+	@PostMapping(value = "/withdrawearn/{amount}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void withdrawEarn(@RequestBody EarnWithdrawRequest request) throws Exception {
+		userService.withdrawEarn(request);
+	}
+
+	@GetMapping(value = "/earnwithdrawrequests/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public List<EarnWithdrawResponse> getEarnWithdrawRequestsByUserId() throws Exception {
+		return userService.getEarnWithdrawRequestsByUserId();
+	}
+
+	@DeleteMapping(value = "/earnwithdraw/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void deleteEarnWithdrawRequest(@PathVariable("id") UUID id) throws Exception {
+		userService.deleteEarnWithdraw(id);
 	}
 }

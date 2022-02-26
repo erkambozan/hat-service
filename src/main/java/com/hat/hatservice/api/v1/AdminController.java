@@ -1,5 +1,6 @@
 package com.hat.hatservice.api.v1;
 
+import com.hat.hatservice.api.dto.EarnWithdrawResponse;
 import com.hat.hatservice.api.dto.PermissionRequest;
 import com.hat.hatservice.api.dto.PermissionResponse;
 import com.hat.hatservice.api.dto.StakeResponse;
@@ -9,6 +10,7 @@ import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserPermissionRequest;
 import com.hat.hatservice.api.dto.UserPermissionResponse;
 import com.hat.hatservice.api.dto.UserResponse;
+import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
 import com.hat.hatservice.exception.NotFoundException;
 import com.hat.hatservice.service.RolePermissionService;
@@ -111,5 +113,23 @@ public class AdminController {
 	@ResponseStatus(code = HttpStatus.OK)
 	public List<WithdrawalResponse> getWithdrawalRequestAll() {
 		return userService.getWithdrawalRequestAll();
+	}
+
+	@PutMapping(value = "/withdraw/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void editWithdrawalRequest(@PathVariable("id") UUID id, @RequestBody WithdrawalRequest request) throws Exception {
+		userService.editWithdrawal(id, request);
+	}
+
+	@GetMapping(value = "/earnwithdrawall/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public List<EarnWithdrawResponse> getEarnWithdrawAll() throws Exception {
+		return userService.getEarnWithdrawAll();
+	}
+
+	@PutMapping(value = "/earnwithdraw/{id}/{status}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public void editEarnWithdrawalRequest(@PathVariable("id") UUID id, @PathVariable("status") String status) throws Exception {
+		userService.setEarnWithdrawStatus(id, status);
 	}
 }
