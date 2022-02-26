@@ -38,7 +38,7 @@ public class PaymentService {
 		this.userService = userService;
 	}
 
-	@Scheduled(cron = "*/20 * * * * ?")
+	@Scheduled(cron = "0 20 * * * ?")
 	public void getAllPayments() throws IOException {
 		OkHttpClient client = new OkHttpClient();
 

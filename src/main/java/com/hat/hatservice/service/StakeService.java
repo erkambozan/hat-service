@@ -141,6 +141,7 @@ public class StakeService {
 
 	public void doStake(Double amount, UserTotalBalance userTotalBalance){
 		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
+		userService.outputTransactionsAmount(userTotalBalance.getUserId(), amount, "Stake");
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 }

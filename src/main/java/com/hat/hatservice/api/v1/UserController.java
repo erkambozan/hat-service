@@ -10,6 +10,7 @@ import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InvalidTokenException;
+import com.hat.hatservice.exception.NotFoundException;
 import com.hat.hatservice.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,6 +53,12 @@ public class UserController {
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public AuthenticationResponse createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) {
 		return userService.authenticate(authenticationRequest);
+	}
+
+	@GetMapping(value = "/det", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public UserResponse getLoggedUserDetails() throws NotFoundException {
+		return userService.getLoggedUserDetails();
 	}
 
 	@GetMapping(value = "/transactions/{user_id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -6,6 +6,7 @@ import com.hat.hatservice.db.UserTotalBalance;
 import com.hat.hatservice.db.UserTotalBalanceRepository;
 import com.hat.hatservice.exception.NotFoundException;
 import com.hat.hatservice.service.StakeService;
+import com.hat.hatservice.service.UserService;
 import com.hat.hatservice.utils.OptionalConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,17 +26,20 @@ public class ScheduleService {
 
 	private final StakeService stakeService;
 
+	private final UserService userService;
+
 	private final StakeRepository stakeRepository;
 
 	private final UserTotalBalanceRepository userTotalBalanceRepository;
 
-	public ScheduleService(StakeService stakeService, StakeRepository stakeRepository, UserTotalBalanceRepository userTotalBalanceRepository) {
+	public ScheduleService(StakeService stakeService, UserService userService, StakeRepository stakeRepository, UserTotalBalanceRepository userTotalBalanceRepository) {
 		this.stakeService = stakeService;
+		this.userService = userService;
 		this.stakeRepository = stakeRepository;
 		this.userTotalBalanceRepository = userTotalBalanceRepository;
 	}
 
-	@Scheduled(cron = "0 12 * * * ?")
+	@Scheduled(cron = "0 20 * * * ?")
 	public void publish() throws ParseException{
 		logger.info("Scheduled method worked");
 		DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -45,13 +49,10 @@ public class ScheduleService {
 			UserTotalBalance userTotalBalance = new UserTotalBalance();
 			try {
 				userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(stake.getUserId())).ifPresent(new NotFoundException("User balance not found"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			logger.info("Stake completed user id : " + stake.getUserId());
-			stakeService.stakeProfit(stake.getExpiryStakeAmount(), userTotalBalance);
-			try {
+				stakeService.stakeProfit(stake.getExpiryStakeAmount(), userTotalBalance);
 				stakeService.finishStake(stake.getId(), stakeRepository);
+				userService.entryTransactionsAmount(stake.getUserId(), stake.getExpiryStakeAmount(), "Stake Profit");
+				logger.info("Stake completed user id : " + stake.getUserId());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

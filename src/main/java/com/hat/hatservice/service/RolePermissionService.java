@@ -66,7 +66,7 @@ public class RolePermissionService {
 		request.getPermissionsName().forEach(p -> {
 			Optional<Permission> permission = permissionRepository.findByName(p);
 			if(permission.isPresent()){
-				Optional<UserPermission> up = userPermissionRepository.findByPermissionId(permission.get().getId());
+				Optional<UserPermission> up = userPermissionRepository.findByUserIdAndPermissionId(request.getUserId(), permission.get().getId());
 
 				if (up.isPresent()) {
 					return;

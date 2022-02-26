@@ -15,6 +15,7 @@ public class TransactionsResponse {
 	private Double amount;
 	@JsonProperty("title")
 	private String title;
+	@JsonProperty("date")
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private java.util.Date transactionDate;
 
