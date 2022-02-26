@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS hat.stake_settings
     stake_percentage  DOUBLE PRECISION,
     stake_type        TEXT,
     minimum_limit     DOUBLE PRECISION,
+    maximum_limit     DOUBLE PRECISION,
     created_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at        TIMESTAMP WITH TIME ZONE
 );
@@ -55,11 +56,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS stake_id_uindex
 
 CREATE TABLE IF NOT EXISTS hat.user_total_balance
 (
-    id            UUID PRIMARY KEY,
-    user_id       UUID,
-    total_balance DOUBLE PRECISION,
-    created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at    TIMESTAMP WITH TIME ZONE
+    id                   UUID PRIMARY KEY,
+    user_id              UUID,
+    withdrawable_balance DOUBLE PRECISION,
+    locked_balance       DOUBLE PRECISION,
+    earn_balance         DOUBLE PRECISION,
+    created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at           TIMESTAMP WITH TIME ZONE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS user_total_balance_id_uindex
@@ -113,6 +116,21 @@ CREATE TABLE IF NOT EXISTS hat.withdrawal
 );
 CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_id_uindex
     ON hat.withdrawal (id);
+
+CREATE TABLE IF NOT EXISTS hat.earn_withdraw
+(
+    id              UUID PRIMARY KEY,
+    user_id         UUID,
+    coin_type TEXT,
+    coin_price DOUBLE PRECISION,
+    withdraw_address  TEXT,
+    withdraw_amount DOUBLE PRECISION,
+    status          TEXT,
+    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at      TIMESTAMP WITH TIME ZONE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS earn_withdraw_id_uindex
+    ON hat.earn_withdraw (id);
 
 CREATE TABLE IF NOT EXISTS hat.payment
 (

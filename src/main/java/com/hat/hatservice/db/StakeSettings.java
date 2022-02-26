@@ -31,6 +31,8 @@ public class StakeSettings {
 	private String stakeType;
 	@Column(name = "minimum_limit")
 	private Double minimumLimit;
+	@Column(name = "maximum_limit")
+	private Double maximumLimit;
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -43,11 +45,12 @@ public class StakeSettings {
 	public StakeSettings() {
 	}
 
-	public StakeSettings(int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit) {
+	public StakeSettings(int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit, Double maximumLimit) {
 		this.expiryStakeTime = expiryStakeTime;
 		this.stakePercentage = stakePercentage;
 		this.stakeType = stakeType;
 		this.minimumLimit = minimumLimit;
+		this.maximumLimit = maximumLimit;
 	}
 
 	public UUID getId() {
@@ -92,6 +95,15 @@ public class StakeSettings {
 
 	public StakeSettings setMinimumLimit(Double minimumLimit) {
 		this.minimumLimit = minimumLimit;
+		return this;
+	}
+
+	public Double getMaximumLimit() {
+		return maximumLimit;
+	}
+
+	public StakeSettings setMaximumLimit(Double maximumLimit) {
+		this.maximumLimit = maximumLimit;
 		return this;
 	}
 

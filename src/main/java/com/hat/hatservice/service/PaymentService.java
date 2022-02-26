@@ -17,7 +17,6 @@ import okhttp3.Response;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +74,7 @@ public class PaymentService {
 				}
 
 				//TODO Where are coming email, we will find #getDestination will fix
-				userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + tokenAmount);
+				userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + tokenAmount);
 				userTotalBalanceRepository.save(userTotalBalance);
 				userService.entryTransactionsAmount(user.getId(), tokenAmount, "Deposit");
 				paymentRepository.save(new Payment(user.getId(), payment.getDeposited().getDestination(), payment.getTransaction_id(), usdAmount, tokenAmount, currencyName, currencyAmount));

@@ -15,6 +15,8 @@ public class StakeSettingsResponse {
 	private String stakeType;
 	@JsonProperty("minimum_limit")
 	private Double minimumLimit;
+	@JsonProperty("maximum_limit")
+	private Double maximumLimit;
 
 	public StakeSettingsResponse() {
 	}
@@ -25,14 +27,16 @@ public class StakeSettingsResponse {
 		this.stakePercentage = stakeSettings.getStakePercentage();
 		this.stakeType = stakeSettings.getStakeType();
 		this.minimumLimit = stakeSettings.getMinimumLimit();
+		this.maximumLimit = stakeSettings.getMaximumLimit();
 	}
 
-	public StakeSettingsResponse(UUID id, int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit) {
+	public StakeSettingsResponse(UUID id, int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit, Double maximumLimit) {
 		this.id = id;
 		this.expiryStakeTime = expiryStakeTime;
 		this.stakePercentage = stakePercentage;
 		this.stakeType = stakeType;
 		this.minimumLimit = minimumLimit;
+		this.maximumLimit = maximumLimit;
 	}
 
 	public UUID getId() {
@@ -77,6 +81,15 @@ public class StakeSettingsResponse {
 
 	public StakeSettingsResponse setMinimumLimit(Double minimumLimit) {
 		this.minimumLimit = minimumLimit;
+		return this;
+	}
+
+	public Double getMaximumLimit() {
+		return maximumLimit;
+	}
+
+	public StakeSettingsResponse setMaximumLimit(Double maximumLimit) {
+		this.maximumLimit = maximumLimit;
 		return this;
 	}
 }

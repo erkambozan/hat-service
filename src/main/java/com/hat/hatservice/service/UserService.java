@@ -2,6 +2,8 @@ package com.hat.hatservice.service;
 
 import com.hat.hatservice.api.dto.AuthenticationRequest;
 import com.hat.hatservice.api.dto.AuthenticationResponse;
+import com.hat.hatservice.api.dto.EarnWithdrawRequest;
+import com.hat.hatservice.api.dto.EarnWithdrawResponse;
 import com.hat.hatservice.api.dto.TokenValidationRequest;
 import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserRequest;
@@ -9,6 +11,8 @@ import com.hat.hatservice.api.dto.UserResponse;
 import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
 import com.hat.hatservice.config.TokenProvider;
+import com.hat.hatservice.db.EarnWithdraw;
+import com.hat.hatservice.db.EarnWithdrawRepository;
 import com.hat.hatservice.db.Transactions;
 import com.hat.hatservice.db.TransactionsRepository;
 import com.hat.hatservice.db.User;
@@ -48,6 +52,7 @@ public class UserService {
 	private final UserTotalBalanceRepository userTotalBalanceRepository;
 	private final TransactionsRepository transactionsRepository;
 	private final WithdrawalRepository withdrawalRepository;
+	private final EarnWithdrawRepository earnWithdrawRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Autowired
@@ -55,11 +60,12 @@ public class UserService {
 	@Autowired
 	private TokenProvider tokenProvider;
 
-	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository) {
+	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository, EarnWithdrawRepository earnWithdrawRepository) {
 		this.userRepository = userRepository;
 		this.userTotalBalanceRepository = userTotalBalanceRepository;
 		this.transactionsRepository = transactionsRepository;
 		this.withdrawalRepository = withdrawalRepository;
+		this.earnWithdrawRepository = earnWithdrawRepository;
 	}
 
 	public UserResponse register(UserRequest request) throws DuplicateException {
@@ -83,7 +89,7 @@ public class UserService {
 				true
 		));
 
-		userTotalBalanceRepository.save(new UserTotalBalance(user.getId(), 0.0));
+		userTotalBalanceRepository.save(new UserTotalBalance(user.getId(), 0.0, 0.0, 0.0));
 		return new UserResponse(
 				user.getId(),
 				user.getReferenceId(),
@@ -91,6 +97,14 @@ public class UserService {
 				user.getLastName(),
 				user.getEmail(),
 				user.isActive());
+	}
+
+	public void updateRole(String roleName, UUID userId) throws NotFoundException {
+		Optional<User> userOptional = userRepository.findById(userId);
+		if(userOptional.isEmpty()){
+			throw new NotFoundException("User Not Found:" + userId);
+		}
+		userRepository.save(userOptional.get().setRole(roleName));
 	}
 
 	protected void authenticate(String username, String password) throws BadCredentialsException, DisabledException {
@@ -174,7 +188,7 @@ public class UserService {
 	public void createWithdrawalRequest(WithdrawalRequest request) throws Exception {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userDetails.getId())).ifPresent(new NotFoundException("Not Found User Balance"));
-		if (request.getWithdrawAmount() > userTotalBalance.getTotalBalance()) throw new InsufficientBalance("Insufficient Balance");
+		if (request.getWithdrawAmount() > userTotalBalance.getWithdrawableBalance()) throw new InsufficientBalance("Insufficient Balance");
 		withdrawalRepository.save(new Withdrawal(userDetails.getId(), request.getWithdrawAmount(), request.getWalletAddress(), "Pending"));
 	}
 
@@ -185,13 +199,13 @@ public class UserService {
 	}
 
 	public void editWithdrawal(UUID id, WithdrawalRequest request) throws Exception {
-		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
-		logger.info("Editing withdrawal request user id : " + userDetails.getId());
+		User userLoggedDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
+		logger.info("Editing withdrawal request user id : " + userLoggedDetails.getId());
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdrawal not found"));
 		withdrawal.changeFields(request);
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findById(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found"));
 		withdrawMoney(request.getWithdrawAmount(), userTotalBalance, request.getWalletAddress());
-		logger.info("Withdraw : " + userDetails.getId());
+		logger.info("Withdraw : " + userLoggedDetails.getId());
 		withdrawalRepository.save(withdrawal);
 	}
 
@@ -205,7 +219,7 @@ public class UserService {
 	}
 
 	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance, String withdrawAddress){
-		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() - amount);
+		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() - amount);
 		outputTransactionsAmount(userTotalBalance.getUserId(), -amount, "Withdraw to " + withdrawAddress);
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
@@ -227,14 +241,70 @@ public class UserService {
 	public Double getTotalBalance() throws Exception {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userDetails.getId())).ifPresent(new NotFoundException("Not Found User Balance"));
-		return userTotalBalance.getTotalBalance();
+		return userTotalBalance.getWithdrawableBalance();
 	}
 
 	public void referenceProfit(UUID referencedUserId, Double amount) throws Exception {
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(referencedUserId)).ifPresent(new NotFoundException("User Not Found"));
 		Double profitAmount = (amount / 100) * 10;
 		entryTransactionsAmount(referencedUserId, profitAmount, "Reference Profit");
-		userTotalBalance.setTotalBalance(userTotalBalance.getTotalBalance() + profitAmount);
+		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + profitAmount);
+	}
+
+	public void exchangeEarnToWithdraw(Double amount) throws Exception {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Exchanging earn balance to withdraw request user id : " + userLoggedDetails.getId());
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User Total Balance not found"));
+		if (userTotalBalance.getEarnBalance() < amount) throw new InsufficientBalance("Insufficient Balance");
+		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - amount);
+		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + amount);
+		userTotalBalanceRepository.save(userTotalBalance);
+	}
+
+	public void withdrawEarn(EarnWithdrawRequest request) throws Exception {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Withdraw Earn working : " + userLoggedDetails.getId());
+		if (request.getCoinPrice() * request.getWithdrawAmount() < 50) throw new InsufficientBalance("Earn amount can not less than 50 ");
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User Total Balance not found."));
+		if (userTotalBalance.getEarnBalance() < request.getWithdrawAmount()) throw new InsufficientBalance("Insufficient balance");
+		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - request.getWithdrawAmount());
+		userTotalBalanceRepository.save(userTotalBalance);
+		earnWithdrawRepository.save(new EarnWithdraw(userLoggedDetails.getId(), request.getCoinType(), request.getCoinPrice(), request.getWithdrawAddress(), request.getWithdrawAmount(), "Pending"));
+	}
+
+	public List<EarnWithdrawResponse> getEarnWithdrawByUserId() throws NotFoundException {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Getting earn withdraw user id : " + userLoggedDetails.getId());
+		List<EarnWithdraw> earnWithdrawList = earnWithdrawRepository.findAllByUserId(userLoggedDetails.getId());
+		List<EarnWithdrawResponse> earnWithdrawResponseList = new ArrayList();
+		earnWithdrawList.forEach(earnWithdrawal -> earnWithdrawResponseList.add(new EarnWithdrawResponse(earnWithdrawal)));
+		return earnWithdrawResponseList;
+	}
+
+	// only Admin
+	public List<EarnWithdrawResponse> getEarnWithdrawAll() throws NotFoundException {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Getting all earn withdraw user id : " + userLoggedDetails.getId());
+		Iterable<EarnWithdraw> earnWithdrawList = earnWithdrawRepository.findAll();
+		List<EarnWithdrawResponse> earnWithdrawResponseList = new ArrayList();
+		earnWithdrawList.forEach(earnWithdrawal -> earnWithdrawResponseList.add(new EarnWithdrawResponse(earnWithdrawal)));
+		return earnWithdrawResponseList;
+	}
+
+	// only Admin
+	public void setEarnWithdrawStatus(String status, UUID id) throws Exception {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Setting earn withdraw status user id : " + userLoggedDetails.getId());
+		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
+		earnWithdraw.setStatus(status);
+		earnWithdrawRepository.save(earnWithdraw);
+	}
+
+	public void deleteEarnWithdraw(UUID id) throws Exception {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		logger.info("Deleting earn withdraw user id : " + userLoggedDetails.getId());
+		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
+		earnWithdrawRepository.delete(earnWithdraw);
 	}
 
 	public UserService setPasswordEncoder(PasswordEncoder passwordEncoder) {

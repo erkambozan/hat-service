@@ -25,8 +25,12 @@ public class UserTotalBalance {
 	private UUID id;
 	@Column(name = "user_id")
 	private UUID userId;
-	@Column(name = "total_balance")
-	private Double totalBalance;
+	@Column(name = "withdrawable_balance")
+	private Double withdrawableBalance;
+	@Column(name = "locked_balance")
+	private Double lockedBalance;
+	@Column(name = "earn_balance")
+	private Double earnBalance;
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -39,9 +43,11 @@ public class UserTotalBalance {
 	public UserTotalBalance() {
 	}
 
-	public UserTotalBalance(UUID userId, Double totalBalance) {
+	public UserTotalBalance(UUID userId, Double withdrawableBalance, Double lockedBalance, Double earnBalance) {
 		this.userId = userId;
-		this.totalBalance = totalBalance;
+		this.withdrawableBalance = withdrawableBalance;
+		this.lockedBalance = lockedBalance;
+		this.earnBalance = earnBalance;
 	}
 
 	public UUID getId() {
@@ -62,12 +68,30 @@ public class UserTotalBalance {
 		return this;
 	}
 
-	public Double getTotalBalance() {
-		return totalBalance;
+	public Double getWithdrawableBalance() {
+		return withdrawableBalance;
 	}
 
-	public UserTotalBalance setTotalBalance(Double totalBalance) {
-		this.totalBalance = totalBalance;
+	public UserTotalBalance setWithdrawableBalance(Double withdrawableBalance) {
+		this.withdrawableBalance = withdrawableBalance;
+		return this;
+	}
+
+	public Double getLockedBalance() {
+		return lockedBalance;
+	}
+
+	public UserTotalBalance setLockedBalance(Double locked_balance) {
+		this.lockedBalance = locked_balance;
+		return this;
+	}
+
+	public Double getEarnBalance() {
+		return earnBalance;
+	}
+
+	public UserTotalBalance setEarnBalance(Double earnBalance) {
+		this.earnBalance = earnBalance;
 		return this;
 	}
 
@@ -88,5 +112,4 @@ public class UserTotalBalance {
 		this.updatedAt = updatedAt;
 		return this;
 	}
-
 }

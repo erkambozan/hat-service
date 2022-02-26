@@ -49,7 +49,7 @@ public class ScheduleService {
 			UserTotalBalance userTotalBalance = new UserTotalBalance();
 			try {
 				userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(stake.getUserId())).ifPresent(new NotFoundException("User balance not found"));
-				stakeService.stakeProfit(stake.getExpiryStakeAmount(), userTotalBalance);
+				stakeService.stakeProfit(stake.getStartedStakeAmount(), stake.getExpiryStakeAmount(), userTotalBalance);
 				stakeService.finishStake(stake.getId(), stakeRepository);
 				userService.entryTransactionsAmount(stake.getUserId(), stake.getExpiryStakeAmount(), "Stake Profit");
 				logger.info("Stake completed user id : " + stake.getUserId());

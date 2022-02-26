@@ -83,6 +83,12 @@ public class AdminController {
 		rolePermissionService.assignUserPermission(request);
 	}
 
+	@PostMapping(value = "/updaterole/{role_name}/{user_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.CREATED)
+	public void updateRole(@PathVariable("role_name") String roleName, @PathVariable("user_id") UUID userId) throws NotFoundException {
+		userService.updateRole(roleName, userId);
+	}
+
 	@GetMapping(value = "/userpermissions/{user_id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public UserPermissionResponse findUserPermissions(@PathVariable("user_id") UUID userId) {

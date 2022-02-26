@@ -12,15 +12,18 @@ public class StakeSettingsRequest {
 	private String stakeType;
 	@JsonProperty("minimum_limit")
 	private Double minimumLimit;
+	@JsonProperty("maximum_limit")
+	private Double maximumLimit;
 
 	public StakeSettingsRequest() {
 	}
 
-	public StakeSettingsRequest(int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit) {
+	public StakeSettingsRequest(int expiryStakeTime, Double stakePercentage, String stakeType, Double minimumLimit, Double maximumLimit) {
 		this.expiryStakeTime = expiryStakeTime;
 		this.stakePercentage = stakePercentage;
 		this.stakeType = stakeType;
 		this.minimumLimit = minimumLimit;
+		this.maximumLimit = maximumLimit;
 	}
 
 	public int getExpiryStakeTime() {
@@ -56,6 +59,15 @@ public class StakeSettingsRequest {
 
 	public StakeSettingsRequest setMinimumLimit(Double minimumLimit) {
 		this.minimumLimit = minimumLimit;
+		return this;
+	}
+
+	public Double getMaximumLimit() {
+		return maximumLimit;
+	}
+
+	public StakeSettingsRequest setMaximumLimit(Double maximumLimit) {
+		this.maximumLimit = maximumLimit;
 		return this;
 	}
 }
