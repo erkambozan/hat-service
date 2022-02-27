@@ -75,6 +75,12 @@ public class UserController {
 		return userService.getTotalBalance();
 	}
 
+	@GetMapping(value = "/referenceCount", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public Integer userReferenceCount() throws Exception {
+		return userService.userReferenceCount();
+	}
+
 	@PostMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.ACCEPTED)
 	public void createWithdrawalRequest(@RequestBody WithdrawalRequest request) throws Exception {

@@ -315,6 +315,12 @@ public class UserService {
 		earnWithdrawRepository.delete(earnWithdraw);
 	}
 
+	public Integer userReferenceCount() throws NotFoundException {
+		final UserResponse userLoggedDetails = getLoggedUserDetails();
+		List<User> userList = userRepository.findByReferenceId(userLoggedDetails.getId());
+		return userList.size();
+	}
+
 	public UserService setPasswordEncoder(PasswordEncoder passwordEncoder) {
 		this.passwordEncoder = passwordEncoder;
 		return this;
