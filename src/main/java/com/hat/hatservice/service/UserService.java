@@ -34,6 +34,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -61,6 +62,8 @@ public class UserService {
 	private AuthenticationManager authenticationManager;
 	@Autowired
 	private TokenProvider tokenProvider;
+	@Value("${config.coinPrice}")
+	private Double coinPrice;
 
 	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository, EarnWithdrawRepository earnWithdrawRepository) {
 		this.userRepository = userRepository;
@@ -198,7 +201,7 @@ public class UserService {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		logger.info("Deleting withdrawal request user id : " + userDetails.getId());
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdraw not found"));
-		if(withdrawal.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		if(!withdrawal.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
 		withdrawalRepository.deleteById(id);
 	}
 
@@ -270,8 +273,8 @@ public class UserService {
 		logger.info("Withdraw Earn working : " + userLoggedDetails.getId());
 		if (request.getCoinPrice() * request.getWithdrawAmount() < 50) throw new InsufficientBalance("Earn amount can not less than 50 ");
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User Total Balance not found."));
-		if (userTotalBalance.getEarnBalance() < request.getWithdrawAmount()) throw new InsufficientBalance("Insufficient balance");
-		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - request.getWithdrawAmount());
+		if ( (userTotalBalance.getEarnBalance() * coinPrice)  < request.getWithdrawAmount()) throw new InsufficientBalance("Insufficient balance");
+		userTotalBalance.setEarnBalance((userTotalBalance.getEarnBalance() * coinPrice) - request.getWithdrawAmount());
 		userTotalBalanceRepository.save(userTotalBalance);
 		earnWithdrawRepository.save(new EarnWithdraw(userLoggedDetails.getId(), request.getCoinType(), request.getCoinPrice(), request.getWithdrawAddress(), request.getWithdrawAmount(), "Pending"));
 	}
@@ -296,11 +299,11 @@ public class UserService {
 	}
 
 	// only Admin
-	public void setEarnWithdrawStatus(UUID id, String status) throws Exception {
+	public void setEarnWithdrawStatus(UUID id, EarnWithdrawRequest request) throws Exception {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Setting earn withdraw status user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
-		earnWithdraw.setStatus(status);
+		earnWithdraw.setStatus(request.getStatus());
 		earnWithdrawRepository.save(earnWithdraw);
 	}
 
@@ -308,7 +311,7 @@ public class UserService {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Deleting earn withdraw user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
-		if(earnWithdraw.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		if(!earnWithdraw.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
 		earnWithdrawRepository.delete(earnWithdraw);
 	}
 

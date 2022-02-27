@@ -11,6 +11,8 @@ public class EarnWithdrawRequest {
 	private String withdrawAddress;
 	@JsonProperty("withdraw_amount")
 	private Double withdrawAmount;
+	@JsonProperty("status")
+	private String status;
 
 	public EarnWithdrawRequest() {
 	}
@@ -20,6 +22,14 @@ public class EarnWithdrawRequest {
 		this.coinPrice = coinPrice;
 		this.withdrawAddress = withdrawAddress;
 		this.withdrawAmount = withdrawAmount;
+	}
+
+	public EarnWithdrawRequest(String coinType, Double coinPrice, String withdrawAddress, Double withdrawAmount, String status) {
+		this.coinType = coinType;
+		this.coinPrice = coinPrice;
+		this.withdrawAddress = withdrawAddress;
+		this.withdrawAmount = withdrawAmount;
+		this.status = status;
 	}
 
 	public String getCoinType() {
@@ -55,6 +65,15 @@ public class EarnWithdrawRequest {
 
 	public EarnWithdrawRequest setWithdrawAmount(Double withdrawAmount) {
 		this.withdrawAmount = withdrawAmount;
+		return this;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public EarnWithdrawRequest setStatus(String status) {
+		this.status = status;
 		return this;
 	}
 }

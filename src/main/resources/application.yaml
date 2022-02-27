@@ -35,3 +35,6 @@ hat:
     auth:
       secretKey: ZXogaGF0aW0gc2Vyc2lydCAxOQo=
       expiration: 10800000
+
+config:
+  coinPrice: 0.003

@@ -11,7 +11,6 @@ import com.hat.hatservice.api.dto.UserResponse;
 import com.hat.hatservice.api.dto.UserTotalBalanceResponse;
 import com.hat.hatservice.api.dto.WithdrawalRequest;
 import com.hat.hatservice.api.dto.WithdrawalResponse;
-import com.hat.hatservice.db.UserTotalBalance;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InvalidTokenException;
 import com.hat.hatservice.exception.NotFoundException;
@@ -100,13 +99,13 @@ public class UserController {
 		userService.exchangeEarnToWithdraw(amount);
 	}
 
-	@PostMapping(value = "/withdrawearn/{amount}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/withdrawearn/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public void withdrawEarn(@RequestBody EarnWithdrawRequest request) throws Exception {
 		userService.withdrawEarn(request);
 	}
 
-	@GetMapping(value = "/earnwithdrawrequests/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/earnwithdrawrequests/", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public List<EarnWithdrawResponse> getEarnWithdrawRequestsByUserId() throws Exception {
 		return userService.getEarnWithdrawRequestsByUserId();

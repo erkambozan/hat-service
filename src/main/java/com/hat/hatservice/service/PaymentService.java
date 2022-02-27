@@ -45,14 +45,15 @@ public class PaymentService {
 				.url("https://api.commerce.coinbase.com/charges")
 				.get()
 				.addHeader("Accept", "application/json")
-				.addHeader("X-CC-Version", "2021-01-01")
-				.addHeader("X-CC-Api-Key", "bea1f8df-c862-4a63-9196-75dedd845164")
+				.addHeader("X-CC-Version", "2022-01-01")
+				.addHeader("X-CC-Api-Key", "3dcbe134-efa0-475e-a584-5a87bdbf63b6")
 				.build();
 
 		Response response = client.newCall(request).execute();
 
 		ObjectMapper om = new ObjectMapper();
-		Root root = om.readValue(response.body().string(), Root.class);
+		assert response.body() != null;
+		Root root = om.readValue(response.body().toString(), Root.class);
 
 		List<com.hat.hatservice.api.dto.payments.Payment> payments = new ArrayList<>();
 		root.getData().forEach(data -> payments.addAll(data.getPayments()));
