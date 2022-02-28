@@ -9,7 +9,7 @@ public class AuthenticationResponse extends UserResponse{
 	private String jwtToken;
 
 	public AuthenticationResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, boolean active, String jwtToken) {
-		super(id, referenceId, firstName, lastName, email, active);
+		super(id, referenceId, firstName, lastName, email,  active);
 		this.jwtToken = jwtToken;
 	}
 

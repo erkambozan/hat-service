@@ -4,6 +4,7 @@ import com.hat.hatservice.api.dto.AuthenticationRequest;
 import com.hat.hatservice.api.dto.AuthenticationResponse;
 import com.hat.hatservice.api.dto.EarnWithdrawRequest;
 import com.hat.hatservice.api.dto.EarnWithdrawResponse;
+import com.hat.hatservice.api.dto.ExchangeEarnToWithdrawRequest;
 import com.hat.hatservice.api.dto.TokenValidationRequest;
 import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserRequest;
@@ -64,6 +65,8 @@ public class UserService {
 	private TokenProvider tokenProvider;
 	@Value("${config.coinPrice}")
 	private Double coinPrice;
+	@Value("${config.referencePercentage}")
+	private Double referencePercentage;
 
 	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository, EarnWithdrawRepository earnWithdrawRepository) {
 		this.userRepository = userRepository;
@@ -253,18 +256,18 @@ public class UserService {
 
 	public void referenceProfit(UUID referencedUserId, Double amount) throws Exception {
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(referencedUserId)).ifPresent(new NotFoundException("User Not Found"));
-		Double profitAmount = (amount / 100) * 10;
+		Double profitAmount = (amount / 100) * referencePercentage;
 		entryTransactionsAmount(referencedUserId, profitAmount, "Reference Profit");
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + profitAmount);
 	}
 
-	public void exchangeEarnToWithdraw(Double amount) throws Exception {
+	public void exchangeEarnToWithdraw(ExchangeEarnToWithdrawRequest request) throws Exception {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Exchanging earn balance to withdraw request user id : " + userLoggedDetails.getId());
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User Total Balance not found"));
-		if (userTotalBalance.getEarnBalance() < amount) throw new InsufficientBalance("Insufficient Balance");
-		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - amount);
-		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + amount);
+		if (userTotalBalance.getEarnBalance() < request.getAmount()) throw new InsufficientBalance("Insufficient Balance");
+		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - request.getAmount());
+		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + request.getAmount());
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 

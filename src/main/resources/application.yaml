@@ -13,7 +13,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/hat_service?currentSchema=hat
     username: postgres
-    password: postgres
+    password: heltpostgres
     driver-class-name: org.postgresql.Driver
     hikari:
       minimum-idle: 5
@@ -26,15 +26,16 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     url: jdbc:postgresql://localhost:5432/hat_service?currentSchema=public
     user: postgres
-    password: postgres
+    password: heltpostgres
 
 hat:
   security:
-    secretKey: ZXogaGF0aW0gc2Vyc2lydCAxOQo=
+    secretKey: aGVsdHNlY3JldA==
     expiration: 10800000
     auth:
-      secretKey: ZXogaGF0aW0gc2Vyc2lydCAxOQo=
+      secretKey: aGVsdHNlY3JldA==
       expiration: 10800000
 
 config:
   coinPrice: 0.003
+  referencePercentage: 10

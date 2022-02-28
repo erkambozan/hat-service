@@ -21,7 +21,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt:0.5.1'
 	implementation 'com.auth0:java-jwt:3.4.0'
 	implementation 'com.github.dozermapper:dozer-spring-boot-starter:6.2.0'
-	implementation 'com.squareup.okhttp3:okhttp:3.14.6'
+	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 	implementation 'de.taimos:totp:1.0'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'

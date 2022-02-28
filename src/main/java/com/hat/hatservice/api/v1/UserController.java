@@ -4,6 +4,7 @@ import com.hat.hatservice.api.dto.AuthenticationRequest;
 import com.hat.hatservice.api.dto.AuthenticationResponse;
 import com.hat.hatservice.api.dto.EarnWithdrawRequest;
 import com.hat.hatservice.api.dto.EarnWithdrawResponse;
+import com.hat.hatservice.api.dto.ExchangeEarnToWithdrawRequest;
 import com.hat.hatservice.api.dto.TokenValidationRequest;
 import com.hat.hatservice.api.dto.TransactionsResponse;
 import com.hat.hatservice.api.dto.UserRequest;
@@ -99,10 +100,10 @@ public class UserController {
 		userService.deleteWithdrawalRequest(id);
 	}
 
-	@PostMapping(value = "/earntowithdraw/{amount}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = "/earntowithdraw", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	public void exchangeEarnToWithdraw(@PathVariable("amount") Double amount) throws Exception {
-		userService.exchangeEarnToWithdraw(amount);
+	public void exchangeEarnToWithdraw(@RequestBody ExchangeEarnToWithdrawRequest request) throws Exception {
+		userService.exchangeEarnToWithdraw(request);
 	}
 
 	@PostMapping(value = "/withdrawearn/", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
