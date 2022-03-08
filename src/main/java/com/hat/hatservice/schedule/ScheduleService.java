@@ -46,9 +46,8 @@ public class ScheduleService {
 		Date currentDate = new SimpleDateFormat("dd/MM/yyyy").parse(customFormatter.format(LocalDate.now()));
 		List<Stake> stakes = stakeRepository.findAllByEndDateAndStakeStatus(currentDate, true);
 		stakes.forEach(stake -> {
-			UserTotalBalance userTotalBalance = new UserTotalBalance();
 			try {
-				userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(stake.getUserId())).ifPresent(new NotFoundException("User balance not found"));
+				UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(stake.getUserId())).ifPresent(new NotFoundException("User balance not found"));
 				stakeService.stakeProfit(stake.getStartedStakeAmount(), stake.getExpiryStakeAmount(), userTotalBalance);
 				stakeService.finishStake(stake.getId(), stakeRepository);
 				userService.entryTransactionsAmount(stake.getUserId(), stake.getExpiryStakeAmount(), "Stake Profit");

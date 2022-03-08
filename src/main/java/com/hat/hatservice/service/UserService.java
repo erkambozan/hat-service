@@ -109,7 +109,7 @@ public class UserService {
 
 	public void updateRole(String roleName, UUID userId) throws NotFoundException {
 		Optional<User> userOptional = userRepository.findById(userId);
-		if(userOptional.isEmpty()){
+		if (userOptional.isEmpty()) {
 			throw new NotFoundException("User Not Found:" + userId);
 		}
 		userRepository.save(userOptional.get().setRole(roleName));
@@ -170,15 +170,22 @@ public class UserService {
 		return new UserResponse(user.getId(), user.getReferenceId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.isActive());
 	}
 
-	public void entryTransactionsAmount(UUID userId, Double amount, String title){
+	public List<UserResponse> getAllUsers() {
+		Iterable<User> usersList = userRepository.findAll();
+		List<UserResponse> userResponseList = new ArrayList();
+		usersList.forEach(user -> userResponseList.add(new UserResponse(user)));
+		return userResponseList;
+	}
+
+	public void entryTransactionsAmount(UUID userId, Double amount, String title) {
 		transactionsRepository.save(new Transactions(userId, amount, title));
 	}
 
-	public void outputTransactionsAmount(UUID userId, Double amount, String title){
+	public void outputTransactionsAmount(UUID userId, Double amount, String title) {
 		transactionsRepository.save(new Transactions(userId, -amount, title));
 	}
 
-	public List<TransactionsResponse> getTransactionsByUserId(UUID userId){
+	public List<TransactionsResponse> getTransactionsByUserId(UUID userId) {
 		logger.info("Get Stake with user id : " + userId);
 		List<Transactions> transactionsList = transactionsRepository.findAllByUserId(userId);
 		List<TransactionsResponse> transactionsResponseList = new ArrayList();
@@ -186,7 +193,7 @@ public class UserService {
 		return transactionsResponseList;
 	}
 
-	public List<TransactionsResponse> getAllTransactions(){
+	public List<TransactionsResponse> getAllTransactions() {
 		Iterable<Transactions> transactionsList = transactionsRepository.findAll();
 		List<TransactionsResponse> transactionsResponseList = new ArrayList();
 		transactionsList.forEach(transaction -> transactionsResponseList.add(new TransactionsResponse(transaction)));
@@ -195,6 +202,7 @@ public class UserService {
 
 	public void createWithdrawalRequest(WithdrawalRequest request) throws Exception {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
+		if(request.getWithdrawAmount() < 20.000) throw new BadRequestException("Cannot less than 20.000 HELT");
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userDetails.getId())).ifPresent(new NotFoundException("Not Found User Balance"));
 		if (request.getWithdrawAmount() > userTotalBalance.getWithdrawableBalance()) throw new InsufficientBalance("Insufficient Balance");
 		withdrawalRepository.save(new Withdrawal(userDetails.getId(), request.getWithdrawAmount(), request.getWalletAddress(), "Pending"));
@@ -204,7 +212,9 @@ public class UserService {
 		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		logger.info("Deleting withdrawal request user id : " + userDetails.getId());
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdraw not found"));
-		if(!withdrawal.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		if (!withdrawal.getStatus().toLowerCase().equals("pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found."));
+		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + withdrawal.getWithdrawAmount());
 		withdrawalRepository.deleteById(id);
 	}
 
@@ -212,9 +222,12 @@ public class UserService {
 		User userLoggedDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User Not Found"));
 		logger.info("Editing withdrawal request user id : " + userLoggedDetails.getId());
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdrawal not found"));
-		withdrawal.changeFields(request);
-		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findById(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found"));
+		withdrawal.changeStatus(request.getStatus());
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found"));
 		withdrawMoney(request.getWithdrawAmount(), userTotalBalance, request.getWalletAddress());
+		if (request.getStatus().toLowerCase().equals("done")) {
+			outputTransactionsAmount(withdrawal.getUserId(), request.getWithdrawAmount(), "Withdraw HELT");
+		}
 		logger.info("Withdraw : " + userLoggedDetails.getId());
 		withdrawalRepository.save(withdrawal);
 	}
@@ -228,13 +241,13 @@ public class UserService {
 		return withdrawalResponseList;
 	}
 
-	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance, String withdrawAddress){
+	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance, String withdrawAddress) {
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() - amount);
 		outputTransactionsAmount(userTotalBalance.getUserId(), -amount, "Withdraw to " + withdrawAddress);
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
-	public List<WithdrawalResponse> getWithdrawalRequestAll(){
+	public List<WithdrawalResponse> getWithdrawalRequestAll() {
 		logger.info("Get all withdrawal requests");
 		Iterable<Withdrawal> withdrawalsList = withdrawalRepository.findAll();
 		List<WithdrawalResponse> withdrawalResponseList = new ArrayList();
@@ -274,10 +287,11 @@ public class UserService {
 	public void withdrawEarn(EarnWithdrawRequest request) throws Exception {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Withdraw Earn working : " + userLoggedDetails.getId());
-		if (request.getCoinPrice() * request.getWithdrawAmount() < 50) throw new InsufficientBalance("Earn amount can not less than 50 ");
+		if (request.getWithdrawAmount() < 50) throw new InsufficientBalance("Earn amount can not less than 50 ");
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(userLoggedDetails.getId())).ifPresent(new NotFoundException("User Total Balance not found."));
-		if ( (userTotalBalance.getEarnBalance() * coinPrice)  < request.getWithdrawAmount()) throw new InsufficientBalance("Insufficient balance");
-		userTotalBalance.setEarnBalance((userTotalBalance.getEarnBalance() * coinPrice) - request.getWithdrawAmount());
+		double withdrawAmountHelt = (request.getWithdrawAmount() / 0.003) ;
+		if (( userTotalBalance.getEarnBalance() < withdrawAmountHelt)) throw new InsufficientBalance("Insufficient balance");
+		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() - withdrawAmountHelt);
 		userTotalBalanceRepository.save(userTotalBalance);
 		earnWithdrawRepository.save(new EarnWithdraw(userLoggedDetails.getId(), request.getCoinType(), request.getCoinPrice(), request.getWithdrawAddress(), request.getWithdrawAmount(), "Pending"));
 	}
@@ -307,6 +321,9 @@ public class UserService {
 		logger.info("Setting earn withdraw status user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
 		earnWithdraw.setStatus(request.getStatus());
+		if (request.getStatus().toLowerCase().equals("done")) {
+			outputTransactionsAmount(earnWithdraw.getUserId(), request.getWithdrawAmount(), "Withdraw Earn USD");
+		}
 		earnWithdrawRepository.save(earnWithdraw);
 	}
 
@@ -314,7 +331,10 @@ public class UserService {
 		final UserResponse userLoggedDetails = getLoggedUserDetails();
 		logger.info("Deleting earn withdraw user id : " + userLoggedDetails.getId());
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
-		if(!earnWithdraw.getStatus().equals("Pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		if (!earnWithdraw.getStatus().toLowerCase().equals("pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
+		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(earnWithdraw.getUserId())).ifPresent(new NotFoundException("User Total Balance not found."));
+		Double findHeltAmount = earnWithdraw.getWithdrawAmount() / 0.003;
+		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() + findHeltAmount);
 		earnWithdrawRepository.delete(earnWithdraw);
 	}
 

@@ -49,7 +49,7 @@ public class PaymentService {
 				.get()
 				.addHeader("Accept", "application/json")
 				.addHeader("X-CC-Version", "")
-				.addHeader("X-CC-Api-Key", "3dcbe134-efa0-475e-a584-5a87bdbf63b6")
+				.addHeader("X-CC-Api-Key", "a635258f-2fcb-42a0-a43b-26ba4448e499")
 				.build();
 
 		Response response = client.newCall(request).execute();

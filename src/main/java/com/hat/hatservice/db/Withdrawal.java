@@ -42,6 +42,10 @@ public class Withdrawal {
 		this.setWithdrawAmount(request.getWithdrawAmount());
 	}
 
+	public void changeStatus(String status){
+		this.setStatus(status);
+	}
+
 	public UUID getId() {
 		return id;
 	}

@@ -88,7 +88,7 @@ public class UserController {
 		userService.createWithdrawalRequest(request);
 	}
 
-	@GetMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public List<WithdrawalResponse> getWithdrawalRequestByUserId() throws Exception {
 		return userService.getWithdrawalRequestByUserId();

@@ -1,6 +1,7 @@
 package com.hat.hatservice.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hat.hatservice.db.User;
 
 import java.util.UUID;
 
@@ -18,6 +19,14 @@ public class UserResponse {
 	private boolean active;
 
 	public UserResponse() {
+	}
+
+	public UserResponse(User user){
+		this.id = user.getId();
+		this.referenceId = user.getReferenceId();
+		this.firstName = user.getFirstName();
+		this.lastName = user.getLastName();
+		this.email = user.getEmail();
 	}
 
 	public UserResponse(UUID id, UUID referenceId, String firstName, String lastName, String email, boolean active) {

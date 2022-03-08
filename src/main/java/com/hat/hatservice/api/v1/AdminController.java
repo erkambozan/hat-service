@@ -110,6 +110,12 @@ public class AdminController {
 		return userService.getAllTransactions();
 	}
 
+	@GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(code = HttpStatus.OK)
+	public List<UserResponse> getAllUsers() {
+		return userService.getAllUsers();
+	}
+
 	@GetMapping(value = "/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
 	public List<WithdrawalResponse> getWithdrawalRequestAll() {
