@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface TransactionsRepository extends CrudRepository<Transactions, UUID> {
 	List<Transactions> findAllByUserId(UUID userId);
+
+	void deleteByWithdrawId(UUID withdrawId);
 }

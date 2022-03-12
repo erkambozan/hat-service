@@ -93,12 +93,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS user_permission_id_uindex
 
 CREATE TABLE IF NOT EXISTS hat.transactions
 (
-    id         UUID PRIMARY KEY,
-    user_id    UUID,
-    amount     DOUBLE PRECISION,
-    title      TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE
+    id          UUID PRIMARY KEY,
+    user_id     UUID,
+    withdraw_id UUID,
+    amount      DOUBLE PRECISION,
+    title       TEXT,
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at  TIMESTAMP WITH TIME ZONE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS transactions_id_uindex
@@ -119,15 +120,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS withdrawal_id_uindex
 
 CREATE TABLE IF NOT EXISTS hat.earn_withdraw
 (
-    id              UUID PRIMARY KEY,
-    user_id         UUID,
-    coin_type TEXT,
-    coin_price DOUBLE PRECISION,
-    withdraw_address  TEXT,
-    withdraw_amount DOUBLE PRECISION,
-    status          TEXT,
-    created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at      TIMESTAMP WITH TIME ZONE
+    id               UUID PRIMARY KEY,
+    user_id          UUID,
+    coin_type        TEXT,
+    coin_price       DOUBLE PRECISION,
+    withdraw_address TEXT,
+    withdraw_amount  DOUBLE PRECISION,
+    status           TEXT,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at       TIMESTAMP WITH TIME ZONE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS earn_withdraw_id_uindex
     ON hat.earn_withdraw (id);
@@ -144,6 +145,22 @@ CREATE TABLE IF NOT EXISTS hat.payment
     currency_amount DOUBLE PRECISION,
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at      TIMESTAMP WITH TIME ZONE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS payment_id_uindex
+    ON hat.payment (id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS payment_transaction_id_uindex
+    ON hat.payment (transaction_id);
+
+CREATE TABLE IF NOT EXISTS hat.email_verification
+(
+    id                UUID PRIMARY KEY,
+    user_id           UUID,
+    verification_code INTEGER,
+    end_time          DATE,
+    created_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at        TIMESTAMP WITH TIME ZONE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS payment_id_uindex

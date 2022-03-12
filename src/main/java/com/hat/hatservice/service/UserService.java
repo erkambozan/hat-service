@@ -15,6 +15,8 @@ import com.hat.hatservice.api.dto.WithdrawalResponse;
 import com.hat.hatservice.config.TokenProvider;
 import com.hat.hatservice.db.EarnWithdraw;
 import com.hat.hatservice.db.EarnWithdrawRepository;
+import com.hat.hatservice.db.EmailVerification;
+import com.hat.hatservice.db.EmailVerificationRepository;
 import com.hat.hatservice.db.Transactions;
 import com.hat.hatservice.db.TransactionsRepository;
 import com.hat.hatservice.db.User;
@@ -57,6 +59,7 @@ public class UserService {
 	private final TransactionsRepository transactionsRepository;
 	private final WithdrawalRepository withdrawalRepository;
 	private final EarnWithdrawRepository earnWithdrawRepository;
+	private final EmailVerificationRepository emailVerificationRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 	@Autowired
@@ -68,12 +71,13 @@ public class UserService {
 	@Value("${config.referencePercentage}")
 	private Double referencePercentage;
 
-	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository, EarnWithdrawRepository earnWithdrawRepository) {
+	public UserService(UserRepository userRepository, UserTotalBalanceRepository userTotalBalanceRepository, TransactionsRepository transactionsRepository, WithdrawalRepository withdrawalRepository, EarnWithdrawRepository earnWithdrawRepository, EmailVerificationRepository emailVerificationRepository) {
 		this.userRepository = userRepository;
 		this.userTotalBalanceRepository = userTotalBalanceRepository;
 		this.transactionsRepository = transactionsRepository;
 		this.withdrawalRepository = withdrawalRepository;
 		this.earnWithdrawRepository = earnWithdrawRepository;
+		this.emailVerificationRepository = emailVerificationRepository;
 	}
 
 	public UserResponse register(UserRequest request) throws DuplicateException {
@@ -97,6 +101,7 @@ public class UserService {
 				true
 		));
 
+		emailVerificationRepository.save(new EmailVerification(user.getId()));
 		userTotalBalanceRepository.save(new UserTotalBalance(user.getId(), 0.0, 0.0, 0.0));
 		return new UserResponse(
 				user.getId(),
@@ -170,6 +175,12 @@ public class UserService {
 		return new UserResponse(user.getId(), user.getReferenceId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.isActive());
 	}
 
+	public User getLoggedUser() throws NotFoundException {
+		Optional<User> userDetails = tokenProvider.getLoggedUser();
+
+		return userDetails.orElseThrow(() -> new NotFoundException("User Not Found"));
+	}
+
 	public List<UserResponse> getAllUsers() {
 		Iterable<User> usersList = userRepository.findAll();
 		List<UserResponse> userResponseList = new ArrayList();
@@ -177,17 +188,18 @@ public class UserService {
 		return userResponseList;
 	}
 
-	public void entryTransactionsAmount(UUID userId, Double amount, String title) {
-		transactionsRepository.save(new Transactions(userId, amount, title));
+	public void entryTransactionsAmount(UUID userId, UUID withdrawId, Double amount, String title) {
+		transactionsRepository.save(new Transactions(userId, withdrawId, amount, title));
 	}
 
-	public void outputTransactionsAmount(UUID userId, Double amount, String title) {
-		transactionsRepository.save(new Transactions(userId, -amount, title));
+	public void outputTransactionsAmount(UUID userId, UUID withdrawId, Double amount, String title) {
+		transactionsRepository.save(new Transactions(userId, withdrawId, -amount, title));
 	}
 
-	public List<TransactionsResponse> getTransactionsByUserId(UUID userId) {
-		logger.info("Get Stake with user id : " + userId);
-		List<Transactions> transactionsList = transactionsRepository.findAllByUserId(userId);
+	public List<TransactionsResponse> getTransactionsByUserId() throws Exception {
+		User userDetails = OptionalConsumer.of(tokenProvider.getLoggedUser()).ifPresent(new NotFoundException("User not found"));
+		logger.info("Get Stake with user id : " + userDetails.getId());
+		List<Transactions> transactionsList = transactionsRepository.findAllByUserId(userDetails.getId());
 		List<TransactionsResponse> transactionsResponseList = new ArrayList();
 		transactionsList.forEach(transaction -> transactionsResponseList.add(new TransactionsResponse(transaction)));
 		return transactionsResponseList;
@@ -215,6 +227,7 @@ public class UserService {
 		if (!withdrawal.getStatus().toLowerCase().equals("pending")) throw new BadRequestException("Cannot be deleted without status Pending ");
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found."));
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + withdrawal.getWithdrawAmount());
+		transactionsRepository.deleteByWithdrawId(withdrawal.getId());
 		withdrawalRepository.deleteById(id);
 	}
 
@@ -224,9 +237,9 @@ public class UserService {
 		Withdrawal withdrawal = OptionalConsumer.of(withdrawalRepository.findById(id)).ifPresent(new NotFoundException("Withdrawal not found"));
 		withdrawal.changeStatus(request.getStatus());
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(withdrawal.getUserId())).ifPresent(new NotFoundException("User Total Balance not found"));
-		withdrawMoney(request.getWithdrawAmount(), userTotalBalance, request.getWalletAddress());
+		withdrawMoney(withdrawal.getId(), request.getWithdrawAmount(), userTotalBalance, request.getWalletAddress());
 		if (request.getStatus().toLowerCase().equals("done")) {
-			outputTransactionsAmount(withdrawal.getUserId(), request.getWithdrawAmount(), "Withdraw HELT");
+			outputTransactionsAmount(withdrawal.getUserId(), withdrawal.getId(), request.getWithdrawAmount(), "Withdraw HELT");
 		}
 		logger.info("Withdraw : " + userLoggedDetails.getId());
 		withdrawalRepository.save(withdrawal);
@@ -241,9 +254,8 @@ public class UserService {
 		return withdrawalResponseList;
 	}
 
-	public void withdrawMoney(Double amount, UserTotalBalance userTotalBalance, String withdrawAddress) {
+	public void withdrawMoney(UUID withdrawId, Double amount, UserTotalBalance userTotalBalance, String withdrawAddress) {
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() - amount);
-		outputTransactionsAmount(userTotalBalance.getUserId(), -amount, "Withdraw to " + withdrawAddress);
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
@@ -270,7 +282,7 @@ public class UserService {
 	public void referenceProfit(UUID referencedUserId, Double amount) throws Exception {
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(referencedUserId)).ifPresent(new NotFoundException("User Not Found"));
 		Double profitAmount = (amount / 100) * referencePercentage;
-		entryTransactionsAmount(referencedUserId, profitAmount, "Reference Profit");
+		entryTransactionsAmount(referencedUserId, referencedUserId, profitAmount, "Reference Profit");
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + profitAmount);
 	}
 
@@ -322,7 +334,7 @@ public class UserService {
 		EarnWithdraw earnWithdraw = OptionalConsumer.of(earnWithdrawRepository.findById(id)).ifPresent(new NotFoundException("Earn Withdraw Not found"));
 		earnWithdraw.setStatus(request.getStatus());
 		if (request.getStatus().toLowerCase().equals("done")) {
-			outputTransactionsAmount(earnWithdraw.getUserId(), request.getWithdrawAmount(), "Withdraw Earn USD");
+			outputTransactionsAmount(earnWithdraw.getUserId(), earnWithdraw.getId(), request.getWithdrawAmount(), "Withdraw Earn USD");
 		}
 		earnWithdrawRepository.save(earnWithdraw);
 	}
@@ -335,6 +347,7 @@ public class UserService {
 		UserTotalBalance userTotalBalance = OptionalConsumer.of(userTotalBalanceRepository.findByUserId(earnWithdraw.getUserId())).ifPresent(new NotFoundException("User Total Balance not found."));
 		Double findHeltAmount = earnWithdraw.getWithdrawAmount() / 0.003;
 		userTotalBalance.setEarnBalance(userTotalBalance.getEarnBalance() + findHeltAmount);
+		transactionsRepository.deleteByWithdrawId(earnWithdraw.getId());
 		earnWithdrawRepository.delete(earnWithdraw);
 	}
 

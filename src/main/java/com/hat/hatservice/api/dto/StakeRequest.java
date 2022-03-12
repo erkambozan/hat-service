@@ -10,7 +10,7 @@ public class StakeRequest {
 
 	public StakeRequest() {
 	}
-
+	
 	public StakeRequest(String stakeType, Double stakeAmount) {
 		this.stakeType = stakeType;
 		this.stakeAmount = stakeAmount;

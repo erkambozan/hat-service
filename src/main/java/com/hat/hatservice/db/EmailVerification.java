@@ -16,26 +16,18 @@ import java.util.Date;
 import java.util.UUID;
 
 @Entity
-@Table(name = "transactions")
-public class Transactions {
+@Table(name = "email_verification")
+public class EmailVerification {
 	@Id
 	@GeneratedValue(generator = "UUID")
 	@GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-	@Column(name = "id", columnDefinition = "uuid", unique = true)
 	private UUID id;
-
 	@Column(name = "user_id")
 	private UUID userId;
-
-	@Column(name = "withdraw_id")
-	private UUID withdrawId;
-
-	@Column(name = "amount")
-	private Double amount;
-
-	@Column(name = "title")
-	private String title;
-
+	@Column(name = "verification_code")
+	private Integer verificationCode;
+	@Column(name = "end_time")
+	private Date endTime;
 	@CreationTimestamp
 	@Column(name = "created_at", columnDefinition = "timestamp")
 	@Temporal(TemporalType.TIMESTAMP)
@@ -45,21 +37,18 @@ public class Transactions {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date updatedAt = Date.from(Instant.now());
 
-	public Transactions() {
+	public EmailVerification() {
 	}
 
-	public Transactions(UUID userId, UUID withdrawId, Double amount, String title) {
+	public EmailVerification(UUID userId) {
 		this.userId = userId;
-		this.withdrawId = withdrawId;
-		this.amount = amount;
-		this.title = title;
 	}
 
 	public UUID getId() {
 		return id;
 	}
 
-	public Transactions setId(UUID id) {
+	public EmailVerification setId(UUID id) {
 		this.id = id;
 		return this;
 	}
@@ -68,35 +57,26 @@ public class Transactions {
 		return userId;
 	}
 
-	public Transactions setUserId(UUID userId) {
+	public EmailVerification setUserId(UUID userId) {
 		this.userId = userId;
 		return this;
 	}
 
-	public UUID getWithdrawId() {
-		return withdrawId;
+	public Integer getVerificationCode() {
+		return verificationCode;
 	}
 
-	public Transactions setWithdrawId(UUID withdrawId) {
-		this.withdrawId = withdrawId;
+	public EmailVerification setVerificationCode(Integer verificationCode) {
+		this.verificationCode = verificationCode;
 		return this;
 	}
 
-	public Double getAmount() {
-		return amount;
+	public Date getEndTime() {
+		return endTime;
 	}
 
-	public Transactions setAmount(Double amount) {
-		this.amount = amount;
-		return this;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public Transactions setTitle(String title) {
-		this.title = title;
+	public EmailVerification setEndTime(Date endTime) {
+		this.endTime = endTime;
 		return this;
 	}
 
@@ -104,7 +84,7 @@ public class Transactions {
 		return createdAt;
 	}
 
-	public Transactions setCreatedAt(Date createdAt) {
+	public EmailVerification setCreatedAt(Date createdAt) {
 		this.createdAt = createdAt;
 		return this;
 	}
@@ -113,7 +93,7 @@ public class Transactions {
 		return updatedAt;
 	}
 
-	public Transactions setUpdatedAt(Date updatedAt) {
+	public EmailVerification setUpdatedAt(Date updatedAt) {
 		this.updatedAt = updatedAt;
 		return this;
 	}

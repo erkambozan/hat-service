@@ -64,10 +64,10 @@ public class UserController {
 		return userService.getLoggedUserDetails();
 	}
 
-	@GetMapping(value = "/transactions/{user_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/transactions", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(code = HttpStatus.OK)
-	public List<TransactionsResponse> getTransactionsByUserId(@PathVariable("user_id") UUID userId) {
-		return userService.getTransactionsByUserId(userId);
+	public List<TransactionsResponse> getTransactionsByUserId() throws Exception {
+		return userService.getTransactionsByUserId();
 	}
 
 	@GetMapping(value = "/totalbalance", produces = MediaType.APPLICATION_JSON_VALUE)

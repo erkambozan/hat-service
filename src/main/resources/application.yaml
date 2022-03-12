@@ -27,6 +27,17 @@ spring:
     url: jdbc:postgresql://localhost:5432/hat_service?currentSchema=public
     user: postgres
     password: heltpostgres
+  mail:
+    host: smtp.gmail.com
+    username: heltcoin@gmail.com
+    password: helt39652053698
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: "true"
+          starttls:
+            enable: "true"
 
 hat:
   security:
@@ -39,3 +50,4 @@ hat:
 config:
   coinPrice: 0.003
   referencePercentage: 10
+  ownerEmail: heltcoin@gmail.com

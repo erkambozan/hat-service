@@ -23,6 +23,8 @@ dependencies {
 	implementation 'com.github.dozermapper:dozer-spring-boot-starter:6.2.0'
 	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 	implementation 'de.taimos:totp:1.0'
+	implementation 'javax.mail:javax.mail-api:1.6.2'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

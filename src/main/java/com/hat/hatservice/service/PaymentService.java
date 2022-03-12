@@ -20,8 +20,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.ParseException;
+import java.util.UUID;
 
 @Component
 public class PaymentService {
@@ -75,7 +75,7 @@ public class PaymentService {
 
 				userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() + tokenAmount);
 				userTotalBalanceRepository.save(userTotalBalance);
-				userService.entryTransactionsAmount(user.getId(), tokenAmount, "Deposit");
+				userService.entryTransactionsAmount(user.getId(), UUID.fromString(payment.getTransaction_id()), tokenAmount, "Deposit");
 				paymentRepository.save(new Payment(user.getId(), data.getMetadata().getEmail(), payment.getTransaction_id(), usdAmount, tokenAmount, currencyName, currencyAmount));
 			} catch (Exception e) {
 				e.printStackTrace();

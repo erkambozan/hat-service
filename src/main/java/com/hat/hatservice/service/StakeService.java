@@ -1,14 +1,10 @@
 package com.hat.hatservice.service;
 
-import com.hat.hatservice.api.dto.EarnWithdrawRequest;
 import com.hat.hatservice.api.dto.StakeRequest;
 import com.hat.hatservice.api.dto.StakeResponse;
 import com.hat.hatservice.api.dto.StakeSettingsRequest;
 import com.hat.hatservice.api.dto.StakeSettingsResponse;
 import com.hat.hatservice.api.dto.UserResponse;
-import com.hat.hatservice.db.EarnWithdraw;
-import com.hat.hatservice.db.EarnWithdrawRepository;
-import com.hat.hatservice.utils.OptionalConsumer;
 import com.hat.hatservice.db.Stake;
 import com.hat.hatservice.db.StakeRepository;
 import com.hat.hatservice.db.StakeSettings;
@@ -18,6 +14,7 @@ import com.hat.hatservice.db.UserTotalBalanceRepository;
 import com.hat.hatservice.exception.DuplicateException;
 import com.hat.hatservice.exception.InsufficientBalance;
 import com.hat.hatservice.exception.NotFoundException;
+import com.hat.hatservice.utils.OptionalConsumer;
 import org.dozer.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +64,9 @@ public class StakeService {
 		Double expiryStakeAmount = stakeRequest.getStakeAmount() + (stakeRequest.getStakeAmount() * stakeSettings.getStakePercentage() / 100);
 		DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		Date endDate = new SimpleDateFormat("dd/MM/yyyy").parse(customFormatter.format(LocalDate.now().plusDays(stakeSettings.getExpiryStakeTime())));
-		stakeRepository.save(new Stake(userLoggedDetails.getId(), stakeRequest.getStakeAmount(), expiryStakeAmount, stakeSettings.getExpiryStakeTime(), stakeSettings.getStakePercentage(), stakeSettings.getStakeType(), true, endDate));
+		Stake stake = stakeRepository.save(new Stake(userLoggedDetails.getId(), stakeRequest.getStakeAmount(), expiryStakeAmount, stakeSettings.getExpiryStakeTime(), stakeSettings.getStakePercentage(), stakeSettings.getStakeType(), true, endDate));
 		logger.info("Stake amount deleting from User balance : " + stakeRequest.getStakeAmount());
-		doStake(stakeRequest.getStakeAmount(), userTotalBalanceOptional);
+		doStake(stake.getId(), stakeRequest.getStakeAmount(), userTotalBalanceOptional);
 	}
 
 	private UserTotalBalance getUserWithdrawableBalance(StakeRequest stakeRequest, UserResponse userLoggedDetails) throws Exception {
@@ -146,10 +143,10 @@ public class StakeService {
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
-	public void doStake(Double amount, UserTotalBalance userTotalBalance) {
+	public void doStake(UUID stakeId, Double amount, UserTotalBalance userTotalBalance) {
 		userTotalBalance.setWithdrawableBalance(userTotalBalance.getWithdrawableBalance() - amount);
 		userTotalBalance.setLockedBalance(userTotalBalance.getLockedBalance() + amount);
-		userService.outputTransactionsAmount(userTotalBalance.getUserId(), amount, "Stake");
+		userService.outputTransactionsAmount(userTotalBalance.getUserId(), stakeId, amount, "Stake");
 		userTotalBalanceRepository.save(userTotalBalance);
 	}
 
