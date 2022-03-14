@@ -66,18 +66,21 @@ public class EmailService {
 		sendEmailVerification(user.getEmail(), verificationCode);
 	}
 
-	public Boolean verifyCode(VerificationRequest request) throws Exception {
+	public void verifyCode(VerificationRequest request) throws Exception {
 		User user = userService.getLoggedUser();
-		return verifyCodeControl(request, user);
+		verifyCodeControl(request, user);
 	}
 
-	@NotNull
-	private Boolean verifyCodeControl(VerificationRequest request, User user) throws Exception {
+	public void verifyCodeNotLoggedUser(VerificationRequest request) throws Exception {
+		User user = OptionalConsumer.of(userRepository.findUserByEmail(request.getEmail())).ifPresent(new NotFoundException("User not found"));
+		verifyCodeControl(request, user);
+	}
+
+	private void verifyCodeControl(VerificationRequest request, User user) throws Exception {
 		EmailVerification emailVerification = OptionalConsumer.of(emailVerificationRepository.findByUserId(user.getId())).ifPresent(new NotFoundException("User Not Found"));
 		if (!request.getVerificationCode().equals(emailVerification.getVerificationCode())) throw new BadRequestException("Verification code not matched");
 		verifyCodeTime(emailVerification);
 		emailVerificationRepository.save(emailVerification.setVerificationCode(0));
-		return true;
 	}
 
 	public void sendEmailVerification(String userEmail, Integer verificationCode) throws EmailCouldNotSendException {

@@ -28,6 +28,8 @@ public class TokenProvider {
 	public static final String LOGIN_URL = "/hat/authenticate";
 	public static final String RESET_PASSWORD = "/hat/resetpassword";
 	public static final String VALIDATE_TOKEN = "/hat/validatetoken";
+	public static final String NOT_LOGGED_SEND_CODE = "/hat/email/sendcodenotloggeduser";
+	public static final String NOT_LOGGED_VERIFICATION = "/hat/email/verifycodenotlogged";
 
 	private static final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
 

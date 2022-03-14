@@ -36,7 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.csrf().disable()
 				.addFilterAfter(new JWTAuthorizationFilter(authenticationManager(), securityProperties, authenticationUserDetailsService), UsernamePasswordAuthenticationFilter.class)
 				.authorizeRequests()
-				.antMatchers(HttpMethod.POST, TokenProvider.SIGN_UP_URL, TokenProvider.LOGIN_URL, TokenProvider.FORGOT_PASSWORD, TokenProvider.RESET_PASSWORD,
+				.antMatchers(HttpMethod.POST, TokenProvider.NOT_LOGGED_SEND_CODE, TokenProvider.NOT_LOGGED_VERIFICATION, TokenProvider.SIGN_UP_URL, TokenProvider.LOGIN_URL, TokenProvider.FORGOT_PASSWORD, TokenProvider.RESET_PASSWORD,
 						TokenProvider.VALIDATE_TOKEN).permitAll()
 				.antMatchers(HttpMethod.GET,"/v2/api-docs").permitAll()
 				.antMatchers("/auth/**").permitAll()

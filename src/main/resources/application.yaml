@@ -30,7 +30,7 @@ spring:
   mail:
     host: smtp.gmail.com
     username: heltcoin@gmail.com
-    password: helt39652053698
+    password: pdtgtjhqxfwvkltj
     port: 587
     properties:
       mail:
